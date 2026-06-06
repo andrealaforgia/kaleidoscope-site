@@ -1,0 +1,20 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kaleidoscope">
+  <defs>
+    <clipPath id="kcl"><circle cx="20" cy="20" r="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#kcl)">
+    <rect x="0" y="0" width="40" height="40" fill="#ffffff"/>
+    <polygon points="20,20 20,1 31,4" fill="#f94144"/>
+    <polygon points="20,20 31,4 38,14" fill="#f3722c"/>
+    <polygon points="20,20 38,14 39,26" fill="#f8961e"/>
+    <polygon points="20,20 39,26 31,36" fill="#f9c74f"/>
+    <polygon points="20,20 31,36 20,39" fill="#90be6d"/>
+    <polygon points="20,20 20,39 9,36" fill="#43aa8b"/>
+    <polygon points="20,20 9,36 1,26" fill="#4d908e"/>
+    <polygon points="20,20 1,26 2,14" fill="#577590"/>
+    <polygon points="20,20 2,14 9,4" fill="#9b5de5"/>
+    <polygon points="20,20 9,4 20,1" fill="#c44df5"/>
+  </g>
+  <circle cx="20" cy="20" r="18" fill="none" stroke="#d0d4dc" stroke-width="1.5"/>
+  <circle cx="20" cy="20" r="3.2" fill="#ffffff" stroke="#d0d4dc" stroke-width="1"/>
+</svg>

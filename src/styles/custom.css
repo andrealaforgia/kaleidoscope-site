@@ -1,0 +1,254 @@
+/* Kaleidoscope — Starlight theme.
+   A spectrum accent: telemetry refracted into a clean palette.
+
+   IMPORTANT: colour tokens are scoped under the explicit theme selectors
+   (:root[data-theme='dark'] / :root[data-theme='light']), never bare :root.
+   Starlight scopes its light palette as [data-theme='light'] (specificity
+   0,1,0); a bare :root override (also 0,1,0) loaded after Starlight would tie
+   and win by source order, poisoning light mode. The :root[data-theme=...]
+   form (0,2,0) wins cleanly for the matching theme only. */
+
+/* ---- Theme-agnostic values (no Starlight colour tokens here) ---- */
+:root {
+  --spectrum: linear-gradient(
+    90deg,
+    #f94144,
+    #f3722c,
+    #f8961e,
+    #f9c74f,
+    #90be6d,
+    #43aa8b,
+    #577590,
+    #9b5de5,
+    #c44df5
+  );
+  --k-radius: 0.7rem;
+}
+
+/* ---- Dark theme ---- */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #261642;
+  --sl-color-accent: #9b5de5;
+  --sl-color-accent-high: #ddccf7;
+  --sl-color-text-accent: #c0a3f5;
+
+  --sl-color-bg: #0a0c12;
+  --sl-color-bg-nav: #0c0f17;
+  --sl-color-bg-sidebar: #0c0f17;
+  --sl-color-hairline: #1c2030;
+  --sl-color-hairline-shade: #161a27;
+}
+
+/* ---- Light theme ---- */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #ece3fb;
+  --sl-color-accent: #7c3aed;
+  --sl-color-accent-high: #34206b;
+  --sl-color-text-accent: #6d28d9;
+
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #faf9fd;
+  --sl-color-bg-sidebar: #faf9fd;
+  --sl-color-hairline: #e9e6f2;
+  --sl-color-hairline-shade: #f0eef8;
+}
+
+/* ---- Header: a thin spectrum bar, the kaleidoscope motif ---- */
+.header {
+  border-bottom: none;
+  box-shadow: 0 1px 0 var(--sl-color-hairline);
+}
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--spectrum);
+  opacity: 0.9;
+}
+
+/* ---- Hero (splash landing) ---- */
+.hero {
+  position: relative;
+}
+/* Soft spectrum glow behind the hero, contained and non-interactive. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -8% 10% 30% 10%;
+  background: radial-gradient(
+    60% 60% at 50% 40%,
+    color-mix(in srgb, var(--sl-color-accent) 45%, transparent),
+    transparent 70%
+  );
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+/* The logo: bigger, with a refracted multi-colour halo. */
+.hero img {
+  width: min(70%, 200px);
+  height: auto;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--sl-color-accent) 55%, transparent))
+    drop-shadow(0 8px 24px rgba(0, 0, 0, 0.25));
+  animation: k-float 7s ease-in-out infinite;
+}
+.hero h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.hero .tagline {
+  margin-top: 0.4rem;
+  color: var(--sl-color-gray-2);
+  max-width: 48ch;
+}
+
+@keyframes k-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero img {
+    animation: none;
+  }
+}
+
+/* ---- Action buttons ---- */
+.sl-link-button.primary {
+  background: linear-gradient(
+    135deg,
+    var(--sl-color-accent),
+    color-mix(in srgb, var(--sl-color-accent) 70%, #c44df5)
+  );
+  border-color: transparent;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--sl-color-accent) 35%, transparent);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sl-link-button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+}
+.sl-link-button.secondary {
+  border-color: var(--sl-color-accent);
+  color: var(--sl-color-text-accent);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.sl-link-button.secondary:hover {
+  background: var(--sl-color-accent-low);
+  transform: translateY(-2px);
+}
+.sl-link-button.minimal:hover {
+  color: var(--sl-color-text-accent);
+}
+
+/* ---- Cards ---- */
+.card {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--k-radius);
+  background: color-mix(in srgb, var(--sl-color-bg) 92%, var(--sl-color-accent));
+  padding: 1.25rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--sl-color-accent) 60%, var(--sl-color-hairline));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--sl-color-accent) 14%, transparent);
+}
+.card .icon {
+  color: var(--sl-color-accent);
+  background: var(--sl-color-accent-low);
+  border-radius: 0.5rem;
+  padding: 0.35rem;
+  box-sizing: content-box;
+}
+
+/* ---- In-content links ---- */
+.sl-markdown-content a:not(.sl-link-button):not(:where(.not-content *)) {
+  text-decoration-color: color-mix(in srgb, var(--sl-color-text-accent) 45%, transparent);
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color 0.15s ease;
+}
+.sl-markdown-content a:not(.sl-link-button):not(:where(.not-content *)):hover {
+  text-decoration-color: var(--sl-color-text-accent);
+}
+
+/* ---- Headings: a subtle hairline under h2 for rhythm ---- */
+.sl-markdown-content h2 {
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+/* ---- Tables: tint the header row with the accent ---- */
+.sl-markdown-content th {
+  background: var(--sl-color-accent-low);
+}
+
+/* ---- Mermaid diagrams ---- */
+pre.mermaid {
+  background: transparent;
+  border: none;
+  padding: 1rem 0;
+  margin: 1.5rem auto;
+  text-align: center;
+  overflow-x: auto;
+}
+pre.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Status pills (reference pages) ---- */
+.k-status {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.28em 0.6em;
+  border-radius: 999px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+:root[data-theme='dark'] .k-status--v1 {
+  background: #14532d;
+  color: #bbf7d0;
+}
+:root[data-theme='dark'] .k-status--v0 {
+  background: #3f3a16;
+  color: #fde68a;
+}
+:root[data-theme='dark'] .k-status--shipped {
+  background: #1e3a5f;
+  color: #bfdbfe;
+}
+:root[data-theme='dark'] .k-status--roadmap {
+  background: #3a2230;
+  color: #f5c2d8;
+}
+:root[data-theme='light'] .k-status--v1 {
+  background: #dcfce7;
+  color: #166534;
+}
+:root[data-theme='light'] .k-status--v0 {
+  background: #fef3c7;
+  color: #92400e;
+}
+:root[data-theme='light'] .k-status--shipped {
+  background: #dbeafe;
+  color: #1e40af;
+}
+:root[data-theme='light'] .k-status--roadmap {
+  background: #fce7f3;
+  color: #9d174d;
+}

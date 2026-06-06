@@ -1,0 +1,53 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+
+<script>
+  function currentTheme() {
+    return document.documentElement.dataset.theme === 'light' ? 'default' : 'dark';
+  }
+
+  async function renderMermaid() {
+    const blocks = Array.from(
+      document.querySelectorAll('pre.mermaid'),
+    ) as HTMLElement[];
+    if (blocks.length === 0) return;
+
+    // Load Mermaid lazily, only on pages that actually contain a diagram.
+    const { default: mermaid } = await import('mermaid');
+
+    // Preserve the original graph source so we can re-render on theme change.
+    for (const el of blocks) {
+      if (!el.dataset.src) el.dataset.src = el.textContent ?? '';
+      el.removeAttribute('data-processed');
+      el.innerHTML = el.dataset.src;
+    }
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: currentTheme(),
+      securityLevel: 'loose',
+      fontFamily: 'inherit',
+    });
+
+    mermaid.run({ nodes: blocks }).catch((err) => {
+      console.error('[mermaid] render failed', err);
+    });
+  }
+
+  // Render on first load and on every Starlight client-side navigation.
+  document.addEventListener('astro:page-load', renderMermaid);
+
+  // Re-render when the user toggles light/dark.
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.attributeName === 'data-theme') {
+        renderMermaid();
+        break;
+      }
+    }
+  });
+  observer.observe(document.documentElement, { attributes: true });
+</script>

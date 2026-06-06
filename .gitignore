@@ -1,0 +1,21 @@
+# build output
+dist/
+# generated types
+.astro/
+# dependencies
+node_modules/
+# logs
+npm-debug.log*
+pnpm-debug.log*
+# environment
+.env
+.env.production
+# macOS
+.DS_Store
+# vercel
+.vercel
+# local sync-loop state (tracks last synced source commit)
+.sync-state.json
+# local agent / tooling state
+.claude/
+.nwave/

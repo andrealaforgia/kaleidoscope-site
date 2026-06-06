@@ -1,0 +1,88 @@
+---
+title: Kaleidoscope
+description: An OpenTelemetry-compatible observability platform — logs, metrics, traces and profiles in one tool, structurally protected against vendor capture.
+template: splash
+hero:
+  tagline: Logs, metrics, traces and profiles in one OpenTelemetry-native platform. Built from scratch on FOSS libraries. Licensed so it cannot be rug-pulled.
+  image:
+    light: ../../assets/logo-light.svg
+    dark: ../../assets/logo-dark.svg
+  actions:
+    - text: What is Kaleidoscope
+      link: /start/what-is-kaleidoscope/
+      icon: right-arrow
+      variant: primary
+    - text: Is it ready for you?
+      link: /start/status/
+      icon: information
+      variant: secondary
+    - text: Quick start
+      link: /getting-started/quick-start/
+      icon: rocket
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+:::caution[Read this first]
+Kaleidoscope is **implementation in progress**, not a finished product. The
+storage engines are durable; several integration components are still v0
+(in-memory, lose data on restart); a number of capabilities are roadmap. This
+site is honest about that on every page. Start with
+[Is it ready for you?](/start/status/) before you plan an adoption.
+:::
+
+## What you get
+
+<CardGrid stagger>
+  <Card title="One tool, four signals" icon="puzzle">
+    Logs, metrics, traces and profiles through a single platform built around
+    the OpenTelemetry wire formats and semantic conventions. No four-stack
+    integration project.
+  </Card>
+  <Card title="OpenTelemetry at every seam" icon="random">
+    Applications emit OTLP. Every internal contract is an OpenTelemetry-defined
+    format. If it speaks OTLP, it speaks to Kaleidoscope.
+  </Card>
+  <Card title="Built from scratch, on FOSS libraries" icon="setting">
+    First-party engines on Apache Arrow, Parquet, DataFusion and Tokio. Not a
+    re-skin of Loki, Mimir, Tempo or Grafana.
+  </Card>
+  <Card title="Structurally un-rug-pullable" icon="approve-check">
+    AGPL-3.0 platform, Apache-2.0 SDKs, contributions under the DCO with no CLA,
+    ever. Designed so no single party can re-license it later.
+  </Card>
+</CardGrid>
+
+## Find your way in
+
+<CardGrid>
+  <LinkCard
+    title="Quick start (CLI)"
+    description="Build the CLI, ingest a log line, read it back. Five minutes."
+    href="/getting-started/quick-start/"
+  />
+  <LinkCard
+    title="Run the gateway end to end"
+    description="Send OTLP in, persist it, query it back. The whole loop."
+    href="/getting-started/gateway/"
+  />
+  <LinkCard
+    title="Architecture overview"
+    description="The two planes, the fifteen instruments, ports and adapters."
+    href="/concepts/architecture/"
+  />
+  <LinkCard
+    title="Component status"
+    description="Exactly what works today, what is v0, and what is roadmap."
+    href="/reference/components/"
+  />
+</CardGrid>
+
+## The cost thesis, in one line
+
+The big vendors charge for rich instrumentation, high-cardinality metrics, long
+retention and broad team access — the very practices they tell you to adopt.
+Kaleidoscope removes the margin: you pay for the compute and storage underneath,
+not for a per-host, per-GB, per-cardinality, per-seat bill on top. See
+[Why it exists](/start/why/).
