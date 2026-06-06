@@ -79,6 +79,41 @@ export default defineConfig({
           ],
         },
         {
+          label: 'The instruments',
+          items: [
+            {
+              label: 'Integration plane',
+              items: [
+                { label: 'Spark — SDK', slug: 'components/spark' },
+                { label: 'Aperture — ingest gateway', slug: 'components/aperture' },
+                { label: 'Sieve — sampling', slug: 'components/sieve' },
+                { label: 'Sluice — ingest buffer', slug: 'components/sluice' },
+                { label: 'Codex — schema authority', slug: 'components/codex' },
+                { label: 'Aegis — identity', slug: 'components/aegis' },
+                { label: 'Prism — frontend', slug: 'components/prism' },
+                { label: 'Beacon — alerting', slug: 'components/beacon' },
+                { label: 'Loom — config as code', slug: 'components/loom' },
+              ],
+            },
+            {
+              label: 'Storage plane',
+              items: [
+                { label: 'Pulse — metrics', slug: 'components/pulse' },
+                { label: 'Lumen — logs', slug: 'components/lumen' },
+                { label: 'Ray — traces', slug: 'components/ray' },
+                { label: 'Strata — profiles', slug: 'components/strata' },
+                { label: 'Cinder — tiering', slug: 'components/cinder' },
+              ],
+            },
+            {
+              label: 'Cross-cutting analysis',
+              items: [
+                { label: 'Augur — anomaly detection', slug: 'components/augur' },
+              ],
+            },
+          ],
+        },
+        {
           label: 'Operating Kaleidoscope',
           items: [
             { label: 'Durability and Earned Trust', slug: 'operating/durability' },

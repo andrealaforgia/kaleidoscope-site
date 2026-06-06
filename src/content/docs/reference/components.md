@@ -15,24 +15,27 @@ literally:
 
 ## The fifteen instruments
 
+Each instrument name links to a detailed page on how it works. For the
+conceptual tour see [The fifteen instruments](/concepts/instruments/).
+
 | Component | Role | Replaces | Status |
 | --- | --- | --- | --- |
 | **Harness** | OTLP conformance test suite | (internal) | <span class="k-status k-status--shipped">shipped</span> |
-| **Spark** | Manual-init OTel SDK wrapper | Datadog / NR APM agents | <span class="k-status k-status--v0">v0</span> |
-| **Aperture** | OTLP-compatible ingest gateway | Datadog Agent, Splunk UF, OTel Collector | <span class="k-status k-status--v0">v0</span> |
-| **Sluice** | Durable ingest buffer | A vendor's internal queues | <span class="k-status k-status--v1">v1</span> |
-| **Sieve** | Sampling and filtering | Datadog filters, Honeycomb Refinery | <span class="k-status k-status--v0">v0</span> |
-| **Codex** | Schema registry + semantic conventions | Datadog tags taxonomy | <span class="k-status k-status--v0">v0</span> |
-| **Pulse** | Time-series metrics engine | Datadog / NR Metrics, Cloud Monitoring | <span class="k-status k-status--v1">v1</span> |
-| **Lumen** | Log storage and search | Datadog Logs, Splunk, Loki, Elastic | <span class="k-status k-status--v1">v1</span> |
-| **Ray** | Distributed trace storage and query | Datadog APM, NR Tracing, Tempo | <span class="k-status k-status--v1">v1</span> |
-| **Strata** | Passive profile storage | Datadog Profiler, NR code-level metrics | <span class="k-status k-status--v1">v1</span> |
-| **Cinder** | Local tier-metadata governor | Datadog Flex Logs, S3 Archives | <span class="k-status k-status--v1">v1</span> |
-| **Prism** | Unified query and visualisation frontend | Datadog dashboards, NR One, Grafana | <span class="k-status k-status--v0">v0</span> |
-| **Beacon** | Alerting + SLO burn-rate engine | Datadog Monitors, NR Alerts, PagerDuty | <span class="k-status k-status--v1">v1</span> |
-| **Augur** | Anomaly detection / AIops | Datadog Watchdog, NR AI | <span class="k-status k-status--v0">v0</span> |
-| **Aegis** | AuthN/Z, multi-tenancy, audit | Datadog RBAC, NR user management | <span class="k-status k-status--v0">v0</span> |
-| **Loom** | Rule-catalogue change control | Terraform Datadog provider | <span class="k-status k-status--v0">v0</span> |
+| [**Spark**](/components/spark/) | Manual-init OTel SDK wrapper | Datadog / NR APM agents | <span class="k-status k-status--v0">v0</span> |
+| [**Aperture**](/components/aperture/) | OTLP-compatible ingest gateway | Datadog Agent, Splunk UF, OTel Collector | <span class="k-status k-status--v0">v0</span> |
+| [**Sluice**](/components/sluice/) | Durable ingest buffer | A vendor's internal queues | <span class="k-status k-status--v1">v1</span> |
+| [**Sieve**](/components/sieve/) | Sampling and filtering | Datadog filters, Honeycomb Refinery | <span class="k-status k-status--v0">v0</span> |
+| [**Codex**](/components/codex/) | Schema registry + semantic conventions | Datadog tags taxonomy | <span class="k-status k-status--v0">v0</span> |
+| [**Pulse**](/components/pulse/) | Time-series metrics engine | Datadog / NR Metrics, Cloud Monitoring | <span class="k-status k-status--v1">v1</span> |
+| [**Lumen**](/components/lumen/) | Log storage and search | Datadog Logs, Splunk, Loki, Elastic | <span class="k-status k-status--v1">v1</span> |
+| [**Ray**](/components/ray/) | Distributed trace storage and query | Datadog APM, NR Tracing, Tempo | <span class="k-status k-status--v1">v1</span> |
+| [**Strata**](/components/strata/) | Passive profile storage | Datadog Profiler, NR code-level metrics | <span class="k-status k-status--v1">v1</span> |
+| [**Cinder**](/components/cinder/) | Local tier-metadata governor | Datadog Flex Logs, S3 Archives | <span class="k-status k-status--v1">v1</span> |
+| [**Prism**](/components/prism/) | Unified query and visualisation frontend | Datadog dashboards, NR One, Grafana | <span class="k-status k-status--v0">v0</span> |
+| [**Beacon**](/components/beacon/) | Alerting + SLO burn-rate engine | Datadog Monitors, NR Alerts, PagerDuty | <span class="k-status k-status--v1">v1</span> |
+| [**Augur**](/components/augur/) | Anomaly detection / AIops | Datadog Watchdog, NR AI | <span class="k-status k-status--v0">v0</span> |
+| [**Aegis**](/components/aegis/) | AuthN/Z, multi-tenancy, audit | Datadog RBAC, NR user management | <span class="k-status k-status--v0">v0</span> |
+| [**Loom**](/components/loom/) | Rule-catalogue change control | Terraform Datadog provider | <span class="k-status k-status--v0">v0</span> |
 
 :::note
 Status reflects the state of `main`. "v1" on a storage pillar means a durable,

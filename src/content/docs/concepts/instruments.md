@@ -10,8 +10,10 @@ pillars of observability — logs, metrics, traces, profiles — plus the
 cross-cutting concerns of ingest, buffering, sampling, schema, alerting, anomaly
 detection, identity, cold storage and configuration as code.
 
-This page is the conceptual tour. For the current implementation status of each
-one, see the [component status table](/reference/components/).
+This page is the conceptual tour. Each instrument also has a **detailed page**
+on how it works, under "The instruments" in the sidebar — linked from each name
+below. For the current implementation status of each one, see the [component
+status table](/reference/components/).
 
 ## The integration plane
 
