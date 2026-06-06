@@ -16,7 +16,7 @@ case, is in the [Query API reference](/reference/query-api/).
 
 ```mermaid
 flowchart LR
-    Q["query: name{service.name=&quot;checkout&quot;}"] --> P[parser]
+    Q["query: name{service.name='checkout'}"] --> P[parser]
     P -->|name| Pulse[(pulse)]
     Pulse -->|fan out across series| F[keep_row filter]
     P -->|matchers| F

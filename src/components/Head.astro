@@ -19,10 +19,13 @@ import Default from '@astrojs/starlight/components/Head.astro';
     const { default: mermaid } = await import('mermaid');
 
     // Preserve the original graph source so we can re-render on theme change.
+    // Restore via textContent, never innerHTML: innerHTML would re-decode HTML
+    // entities a second time (e.g. a literal `&quot;` in the source would turn
+    // into a bare `"`), corrupting the diagram definition.
     for (const el of blocks) {
-      if (!el.dataset.src) el.dataset.src = el.textContent ?? '';
+      if (el.dataset.src === undefined) el.dataset.src = el.textContent ?? '';
       el.removeAttribute('data-processed');
-      el.innerHTML = el.dataset.src;
+      el.textContent = el.dataset.src;
     }
 
     mermaid.initialize({

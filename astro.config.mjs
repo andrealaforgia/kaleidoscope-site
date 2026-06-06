@@ -44,6 +44,9 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       components: {
         Head: './src/components/Head.astro',
+        // Always-on "work in progress" notice (Starlight's default Banner only
+        // shows when a page sets `banner` frontmatter; we want it site-wide).
+        Banner: './src/components/Banner.astro',
       },
       sidebar: [
         {
