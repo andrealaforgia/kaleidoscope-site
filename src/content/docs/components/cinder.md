@@ -9,8 +9,7 @@ description: Kaleidoscope's tiering governor — records which storage tier each
 
 Cinder is the tiering governor. It does not store telemetry payloads — the storage
 pillars own those bytes. Cinder records *where each item lives* (hot, warm or
-cold) and moves items down the tiers as they age. It was the first feature in the
-platform to survive a process restart.
+cold) and moves items down the tiers as they age.
 
 ## What it does
 

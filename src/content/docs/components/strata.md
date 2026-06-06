@@ -40,8 +40,7 @@ flowchart LR
 - **One ingest routine** serves the live path and recovery, so they cannot drift;
  it keeps the v0 rule of dropping profiles with no service name from the index.
 - **Durability** is the shared WAL-plus-snapshot machinery with real fsync and
- torn-tail recovery. The KPIs held at first measure with no
- delivery-time adjustment — by the sixth pillar the pattern was settled.
+ torn-tail recovery, the same as the other pillars.
 
 ## What works today
 

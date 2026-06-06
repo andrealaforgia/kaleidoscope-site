@@ -51,9 +51,8 @@ flowchart LR
 The five-type public surface is `SchemaCatalogue`, `BlessedAttribute`,
 `LintReport`, `LintViolation` and `ViolationKind`. Blessed attributes come in
 `Exact` and `Prefix` forms (so `feature_flag.checkout_v2` matches the
-`feature_flag.` prefix, but a bare `feature_flag.` does not). The DELIVER wave
-closed with 46 tests and every viable mutant caught. "v0" here means a shipped,
-stable library — Codex stores nothing.
+`feature_flag.` prefix, but a bare `feature_flag.` does not). "v0" here means a
+shipped, stable library — Codex stores nothing.
 
 ## Roadmap and limits
 

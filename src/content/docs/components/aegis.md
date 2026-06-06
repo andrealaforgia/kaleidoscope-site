@@ -54,11 +54,11 @@ type-level guarantee. See [Run the gateway end to end](/getting-started/gateway/
 ## What works today
 
 The public surface includes `Validator`, `ValidatorConfig`, `TenantContext`,
-`TenantId`, `Role`, `ValidationError`, and the catalogue loader. KPIs: validation
-p95 around 1 ms, catalogue load of 1,000 tenants within 50 ms, 100% audit
-completeness. The ingest-auth wiring shipped with a full gRPC and HTTP reject
-matrix, refuse-to-start, and a test asserting the secret never appears in
-anything the process prints.
+`TenantId`, `Role`, `ValidationError`, and the catalogue loader. Validation does
+no I/O, so it is fast (sub-millisecond), and every decision emits exactly one
+audit event. On the ingest path, both gRPC and HTTP reject the full range of
+invalid tokens, the gateway refuses to start without a complete auth config, and
+the signing secret is read from a file by path and never logged.
 
 ## Roadmap and limits
 

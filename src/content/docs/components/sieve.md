@@ -53,8 +53,7 @@ flowchart LR
 The non-error rate is set by `SIEVE_NON_ERROR_TRACE_RATE` (default `0.1`, i.e.
 10% of non-error traces kept); the summary interval by `SIEVE_SUMMARY_TICK_MS`
 (default 60000). The public surface is `Sampler`, `Decision`, `KeepReason`,
-`HeadSampler`, `SamplingSink`, `TraceView` and `SieveConfigError`. The DELIVER
-wave closed with 36 tests at a 100% mutation kill rate.
+`HeadSampler`, `SamplingSink`, `TraceView` and `SieveConfigError`.
 
 The status label "v0" here means a shipped library behind a stable trait, not an
 in-memory store.

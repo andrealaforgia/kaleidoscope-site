@@ -65,8 +65,7 @@ The `SparkConfig` builder offers `for_service`, `require_tenant_id`,
 `with_flush_timeout` and `with_strict_schema_lint`. The only environment variable
 Spark reads is the OpenTelemetry-canonical `OTEL_EXPORTER_OTLP_ENDPOINT`
 (defaulting to `http://localhost:4317`); it introduces no `SPARK_*` variables of
-its own. Transport at v0 is gRPC. The DELIVER wave closed with sixty active
-tests across eight binaries at a 100% mutation kill rate.
+its own. Transport at v0 is gRPC.
 
 A note on the status label: "v0" here means a shipped, stable, tested public
 surface, not an in-memory store that loses data — Spark holds no state.

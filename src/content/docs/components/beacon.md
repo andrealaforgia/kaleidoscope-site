@@ -36,11 +36,11 @@ flowchart LR
 
 - **Two-crate workspace.** A pure library plus a thin `beacon-server`
  binary; the library has no runtime types in its public API.
-- **Rules: CUE-shaped, TOML on the wire.** A spike found no
- good-enough Apache-licensed Rust CUE library, so v0 parses TOML with
- `deny_unknown_fields` while keeping the CUE-shaped schema. Diagnostics give
- file, line and a "did you mean" suggestion. When [Loom](/components/loom/)'s CUE
- authority matures, it compiles CUE down to the same rule shape.
+- **Rules: CUE-shaped, TOML on the wire.** Rules are TOML on disk at v0 (the
+ schema is CUE-shaped, because the Rust CUE ecosystem is not yet mature enough).
+ The loader uses `deny_unknown_fields` and gives file, line and a "did you mean"
+ suggestion on a bad rule. When [Loom](/components/loom/)'s CUE authority matures,
+ it compiles CUE down to the same rule shape.
 - **Pure state machine.** `Inactive → Pending → Firing → Resolved`,
  total over every input, evaluated against a scheduler seam.
 - **Storm collapse.** A twenty-rule storm caused by one
@@ -63,8 +63,7 @@ flowchart LR
 `beacon-server --rules <dir> --backend <url>` loads TOML rules, spawns a task per
 rule, and emits incidents to four HTTP sinks: a generic webhook, Mattermost,
 Zulip and Grafana OnCall. Header redaction is structural — a configured bearer
-token is asserted never to appear in a request body. Beacon v0 closed with 73
-acceptance tests; durable rule state added more at a 100% mutation kill rate. See
+token never appears in a request body. See
 [Alerting with Beacon](/operating/alerting/).
 
 ## Roadmap and limits

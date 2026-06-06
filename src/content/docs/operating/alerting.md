@@ -73,12 +73,12 @@ source URL in a comment, so a reviewer audits it by eye.
 Beacon ships four HTTP-based sink adapters at v0: a generic webhook, Mattermost,
 Zulip, and Grafana OnCall. Each formats the canonical incident for its target
 protocol. SMTP is deferred to a later version because TLS, auth and sender config
-deserve their own slice.
+warrant dedicated work of their own.
 
 Header redaction is structural: every adapter builds its outbound payload from
-incident fields only, never from headers, and an explicit test asserts that a
-configured bearer token never appears in a request body. Secrets are referenced
-by environment-variable name in the rule, not embedded.
+incident fields only, never from headers, so a configured bearer token never
+appears in a request body. Secrets are referenced by environment-variable name in
+the rule, not embedded.
 
 ## Durable across restarts
 

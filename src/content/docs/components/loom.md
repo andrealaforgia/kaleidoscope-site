@@ -47,10 +47,10 @@ flowchart LR
 
 ## What works today
 
-The three commands, text output for pre-commit hooks and JSON for PR comments and
-bots, with KPIs of feedback under 100 ms on a 50-rule corpus, byte-equal plans,
-and idempotent applies. Loom v0 closed with 39 acceptance tests. See [Config as
-code with Loom](/operating/config-as-code/).
+The three commands, with text output for pre-commit hooks and JSON for PR
+comments and bots. Plans are byte-equal across runs and applies are idempotent,
+so reviews are stable and re-running `apply` is safe. See [Config as code with
+Loom](/operating/config-as-code/).
 
 ## Roadmap and limits
 

@@ -37,15 +37,15 @@ flowchart LR
     style Trait fill:#2a1a3a,color:#fff
 ```
 
-The v0 adapter proves the contract; the v1 adapter proves the contract survives
-durability; a future v2 (columnar storage, object-storage cold tier) will prove
-it survives scale. Each step is additive: the v0 acceptance suite stays green
-when v1 lands, with at most one additive error variant for I/O failures.
+The v0 adapter establishes the contract; the v1 adapter keeps the same contract
+while adding durability; a future v2 (columnar storage, object-storage cold tier)
+will keep it again while adding scale. Each step is additive — moving from v0 to
+v1 changes the adapter behind the trait, not the trait itself, so code that used
+the in-memory store works unchanged against the durable one.
 
-The claim "v1 inherits the v0 trait" was rhetoric until the first v1 shipped.
-Now six storage pillars have made the round trip — tier metadata, queue, logs,
-metrics, traces, profiles — across six different data shapes, so the
-carry-forward is a settled property of the platform, not a hope.
+Six storage pillars have made this v0-to-v1 round trip — tier metadata, queue,
+logs, metrics, traces and profiles — across six different data shapes, so the
+carry-forward is a property you can rely on, not a one-off.
 
 ## The strata, restated as swap points
 

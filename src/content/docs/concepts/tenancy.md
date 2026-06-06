@@ -54,9 +54,9 @@ all explicitly v1 or later. Aegis v0 is the trait and the minimal honest
 implementation behind it, in keeping with the [ports and
 adapters](/concepts/ports-and-adapters/) pattern.
 
-Retrofitting Aegis into its consumers is staged: each adopts Aegis when its
-auth-bearing slice lands, rather than all at once. The first to land is
-**Aperture's ingest path**, which now requires a validated HS256 JWT for every
+Aegis is adopted by its consumers one at a time rather than all at once. The
+first is **Aperture's ingest path**, which now requires a validated HS256 JWT for
+every
 OTLP request and refuses to start without an auth block — see [Run the gateway
 end to end](/getting-started/gateway/). Beacon and Prism are still to follow.
 Check the [component status table](/reference/components/) for where each one is.

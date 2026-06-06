@@ -68,10 +68,9 @@ gateway end to end](/getting-started/gateway/) for the configuration.
 Configuration is TOML via `figment` with `deny_unknown_fields`, so a misspelled
 key fails loudly. Keys cover bind addresses, max message sizes, per-transport
 concurrency, sink kind, forwarding endpoint and timeout, and the drain deadline.
-Observability is JSON `tracing` to stderr with a closed event vocabulary. The
-DELIVER wave closed with 176 active tests at a 100% mutation kill rate. Aperture
-is wired into the runnable `kaleidoscope-gateway` binary, which persists received
-telemetry into the durable pillars.
+Observability is JSON `tracing` to stderr with a closed event vocabulary.
+Aperture is wired into the runnable `kaleidoscope-gateway` binary, which persists
+received telemetry into the durable pillars.
 
 ## Roadmap and limits
 

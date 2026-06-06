@@ -47,10 +47,10 @@ lives in the shared `wal-recovery` crate.
 ## What works today
 
 The public surface is `Queue`, `InMemoryQueue`, `FileBackedQueue`, `Message`,
-`MessageId`, `EnqueueError`, plus the `MetricsRecorder` observability seam. KPIs:
-enqueue plus dequeue p95 under 50 µs in memory (v0); enqueue p95 under 300 µs and
-recovery under 500 ms over 10,000 messages once durable (v1, debug build). v1
-added one additive error variant, `EnqueueError::PersistenceFailed`.
+`MessageId`, `EnqueueError`, plus the `MetricsRecorder` observability seam.
+Queues are per-tenant and bounded; a full queue returns `EnqueueError::Full`, and
+on the durable adapter a failed persist returns `EnqueueError::PersistenceFailed`
+rather than acknowledging a message it did not write.
 
 ## Roadmap and limits
 

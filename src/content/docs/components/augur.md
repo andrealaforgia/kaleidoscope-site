@@ -52,9 +52,9 @@ flowchart LR
 `ZScoreObserver::new(threshold, min_samples)` and
 `RareEventObserver::new(rarity_threshold, min_samples)`, each emitting an
 `Anomaly { tenant, value, score, observed_at, reason }`. The observe path is
-O(1) per sample, with KPIs of p95 under 10 µs (z-score) and under 20 µs
-(rare event). A cross-pillar test asserts the value Augur flags is bit-identical
-to the point [Pulse](/components/pulse/) stored.
+O(1) per sample, so a detector is cheap to run inline alongside ingest. The value
+carried on an anomaly is the exact value observed, so it lines up bit-for-bit with
+what [Pulse](/components/pulse/) stored.
 
 ## Roadmap and limits
 

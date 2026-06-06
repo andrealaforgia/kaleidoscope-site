@@ -67,9 +67,9 @@ Alerting state is durable too (`FileBackedRuleStateStore`), so a firing alert
 survives a restart instead of re-paging the on-call engineer for an incident
 they are already handling.
 
-Durability is not just claimed — it is proven with kill-9 tests and an
-fsync-honesty probe that refuses to start if the underlying disk lies about
-persistence. See [Durability and Earned Trust](/operating/durability/).
+The durable stores `fsync` acknowledged writes and recover an intact prefix after
+a crash, and the gateway refuses to start if the underlying disk does not honour
+`fsync`. See [Durability and Earned Trust](/operating/durability/).
 
 The **integration-plane** components (Spark, Aperture, Sieve, Codex, Prism,
 Augur, Aegis) are still at **v0**. They work, they are tested, but several keep
