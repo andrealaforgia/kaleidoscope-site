@@ -29,33 +29,33 @@ option builder, and the auto-refresh reducer.
 
 ```mermaid
 flowchart LR
-    O{QueryOutcome} -->|success| Chart[chart canvas]
-    O -->|empty| Calm[calm no-data]
-    O -->|parse-error| PB[verbatim backend error]
-    O -->|transport-error| TB[backend label + cause]
-    O -->|config-error| Refuse[App refuses to mount]
-    PB --> Remove[canvas removed from DOM]
-    TB --> Remove
-    Calm --> Remove
+ O{QueryOutcome} -->|success| Chart[chart canvas]
+ O -->|empty| Calm[calm no-data]
+ O -->|parse-error| PB[verbatim backend error]
+ O -->|transport-error| TB[backend label + cause]
+ O -->|config-error| Refuse[App refuses to mount]
+ PB --> Remove[canvas removed from DOM]
+ TB --> Remove
+ Calm --> Remove
 ```
 
-- **`queryRange` never throws (ADR-0027).** Every failure becomes a `QueryOutcome`
-  arm — success, empty, parse-error, transport-error, config-error — each with its
-  own calm surface. A stale chart is *removed* from the DOM on any non-success
-  outcome, never left next to an error banner to mislead.
+- **`queryRange` never throws.** Every failure becomes a `QueryOutcome`
+ arm — success, empty, parse-error, transport-error, config-error — each with its
+ own calm surface. A stale chart is *removed* from the DOM on any non-success
+ outcome, never left next to an error banner to mislead.
 - **Data fidelity is a hard rule.** The option builder disables smoothing,
-  null-bridging and down-sampling; series data passes through verbatim, so the
-  chart cannot lie about the underlying numbers.
-- **Auto-refresh is a pure reducer (ADR-0029).** A `(state, event) → (next,
-  effects)` machine with backoff at 5/10/20 seconds capped at 30, pausing when the
-  tab is hidden, and disabling itself against a frozen absolute range. A separate
-  scheduler owns the real timers.
-- **URL permalink (ADR-0028).** State encodes to `q`, `from`, `to`, `refresh`.
-  Absolute decoding does not depend on the wall clock, so the same URL reproduces
-  the same chart days later — the basis of the postmortem permalink.
+ null-bridging and down-sampling; series data passes through verbatim, so the
+ chart cannot lie about the underlying numbers.
+- **Auto-refresh is a pure reducer.** A `(state, event) → (next,
+ effects)` machine with backoff at 5/10/20 seconds capped at 30, pausing when the
+ tab is hidden, and disabling itself against a frozen absolute range. A separate
+ scheduler owns the real timers.
+- **URL permalink.** State encodes to `q`, `from`, `to`, `refresh`.
+ Absolute decoding does not depend on the wall clock, so the same URL reproduces
+ the same chart days later — the basis of the postmortem permalink.
 - **Accessibility.** A WCAG 2.2 AA pass: visible focus rings, adequate touch
-  targets, reduced-motion and forced-colors support, and an accessible table
-  beside the chart for assistive technology.
+ targets, reduced-motion and forced-colors support, and an accessible table
+ beside the chart for assistive technology.
 
 ## What works today
 
@@ -74,9 +74,3 @@ click-through to exemplars ([Ray](/components/ray/), [Strata](/components/strata
 saved named dashboards ([Loom](/components/loom/)), and native auth
 ([Aegis](/components/aegis/)).
 
-## Key decisions
-
-ADR-0026 (component layout), ADR-0027 (backend client and error mapping),
-ADR-0028 (URL codec), ADR-0029 (auto-refresh state machine), ADR-0030 (ECharts
-integration), ADR-0031 (workspace tooling), ADR-0032 (licence headers), ADR-0043
-(backend wiring), ADR-0062 (`query_range` raw points at v0).

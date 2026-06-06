@@ -27,36 +27,36 @@ ordinary `tracing::info!` calls and the OpenTelemetry tracer and meter as usual.
 ## How it works
 
 The entire public surface is **four items** — `init`, `SparkConfig`,
-`SparkError`, `SparkGuard` — locked by ADR-0011. Spark deliberately does not
+`SparkError`, `SparkGuard` — locked by design. Spark deliberately does not
 re-export upstream OpenTelemetry types, so the dependency edge stays visible and
 renaming nothing leaks a breaking change.
 
 ```mermaid
 flowchart LR
-    App[application] -->|tracing::info!| Bridge[tracing-subscriber bridge]
-    Bridge --> LP[OTel LoggerProvider]
-    App -->|spans / metrics| TP[Tracer + Meter providers]
-    TP --> BP[batch processors]
-    LP --> BP
-    BP -->|OTLP / gRPC| Endpoint[(Aperture :4317)]
-    Guard[SparkGuard drop] -->|bounded force_flush| BP
+ App[application] -->|tracing::info!| Bridge[tracing-subscriber bridge]
+ Bridge --> LP[OTel LoggerProvider]
+ App -->|spans / metrics| TP[Tracer + Meter providers]
+ TP --> BP[batch processors]
+ LP --> BP
+ BP -->|OTLP / gRPC| Endpoint[(Aperture :4317)]
+ Guard[SparkGuard drop] -->|bounded force_flush| BP
 ```
 
 A few decisions worth knowing:
 
-- **Single-init invariant (ADR-0015).** A static atomic guards against
-  double-initialisation; the flag is released when the guard drops, so
-  init → drop → init cycles are allowed. The startup lint runs *before* the flag
-  flips, so a configuration error never half-initialises the process.
-- **Logs via the tracing bridge (ADR-0017).** The pinned OpenTelemetry SDK has no
-  global logger-provider setter, so Spark wires
-  `opentelemetry-appender-tracing` as a `tracing-subscriber` layer, filtered to
-  exclude Spark's own diagnostics so telemetry never feeds back on itself.
-- **Bounded flush (ADR-0014).** Each signal is flushed in turn against a
-  remaining-time budget, default five seconds.
-- **Schema lint at init (ADR-0025).** Spark calls [Codex](/components/codex/) to
-  validate the composed attributes. Default mode warns once; strict mode
-  (`with_strict_schema_lint(true)`) returns an error so CI fails fast.
+- **Single-init invariant.** A static atomic guards against
+ double-initialisation; the flag is released when the guard drops, so
+ init → drop → init cycles are allowed. The startup lint runs *before* the flag
+ flips, so a configuration error never half-initialises the process.
+- **Logs via the tracing bridge.** The pinned OpenTelemetry SDK has no
+ global logger-provider setter, so Spark wires
+ `opentelemetry-appender-tracing` as a `tracing-subscriber` layer, filtered to
+ exclude Spark's own diagnostics so telemetry never feeds back on itself.
+- **Bounded flush.** Each signal is flushed in turn against a
+ remaining-time budget, default five seconds.
+- **Schema lint at init.** Spark calls [Codex](/components/codex/) to
+ validate the composed attributes. Default mode warns once; strict mode
+ (`with_strict_schema_lint(true)`) returns an error so CI fails fast.
 
 ## What works today
 
@@ -74,14 +74,9 @@ surface, not an in-memory store that loses data — Spark holds no state.
 ## Roadmap and limits
 
 - **Auto-instrumentation is not in v0.** Spark is manual-init; automatic
-  instrumentation is a later version.
+ instrumentation is a later version.
 - **Drained / dropped export counts** are not exposed, because the pinned
-  OpenTelemetry SDK does not expose them; v0 records the honest literal
-  `unknown` rather than building a throwaway counter.
+ OpenTelemetry SDK does not expose them; v0 records the honest literal
+ `unknown` rather than building a throwaway counter.
 - **Publication to crates.io** is post-v0; today the crate is in-tree only.
 
-## Key decisions
-
-ADR-0011 (public API), ADR-0012 (error type), ADR-0013 (dependency pinning),
-ADR-0014 (flush timeout), ADR-0015 (single-init), ADR-0016 (guard posture),
-ADR-0017 (logs emission), ADR-0025 (Codex integration).

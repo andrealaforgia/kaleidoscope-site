@@ -27,26 +27,26 @@ adapter. Crucially, it stores **metadata, not payloads**: the mapping
 
 ```mermaid
 flowchart LR
-    Engines[Lumen / Pulse / Ray / Strata] -->|tier lookup| T[TieringStore]
-    T --> H[Hot] & W[Warm] & C[Cold]
-    Op[operator] -->|place / migrate| FB[FileBackedTieringStore]
-    FB -->|append| WAL[(NDJSON WAL)]
-    FB -->|snapshot| Snap[(snapshot)]
-    Snap -->|recover| FB
-    FB -.->|v2| Iceberg[(OpenDAL + Iceberg)]
+ Engines[Lumen / Pulse / Ray / Strata] -->|tier lookup| T[TieringStore]
+ T --> H[Hot] & W[Warm] & C[Cold]
+ Op[operator] -->|place / migrate| FB[FileBackedTieringStore]
+ FB -->|append| WAL[(NDJSON WAL)]
+ FB -->|snapshot| Snap[(snapshot)]
+ Snap -->|recover| FB
+ FB -.->|v2| Iceberg[(OpenDAL + Iceberg)]
 ```
 
 - **Pure, simulated-time policy.** `TierPolicy::age_based(hot_to_warm,
-  warm_to_cold)` is a value type, and `evaluate_at(now, policy)` is a pure function
-  of the time you pass in — the operator binary owns the real timer. This keeps the
-  lifecycle logic deterministic and testable.
+ warm_to_cold)` is a value type, and `evaluate_at(now, policy)` is a pure function
+ of the time you pass in — the operator binary owns the real timer. This keeps the
+ lifecycle logic deterministic and testable.
 - **Durability (v1).** The shared WAL-plus-snapshot machinery, with `place` and
-  the policy evaluation made write-ahead-ordered and fallible so a persistence
-  failure is surfaced rather than acknowledged falsely (ADR-0065). See
-  [Durability and Earned Trust](/operating/durability/).
+ the policy evaluation made write-ahead-ordered and fallible so a persistence
+ failure is surfaced rather than acknowledged falsely. See
+ [Durability and Earned Trust](/operating/durability/).
 - **Operator surface.** The CLI exposes the full lifecycle: `place`, `get-tier`,
-  `migrate`, `list-items` and `evaluate-policy`, with tier-distribution lines in
-  `stats`. See the [CLI reference](/reference/cli/).
+ `migrate`, `list-items` and `evaluate-policy`, with tier-distribution lines in
+ `stats`. See the [CLI reference](/reference/cli/).
 
 ## What works today
 
@@ -58,13 +58,8 @@ and to an OTLP-JSON file.
 ## Roadmap and limits
 
 - **The object-storage cold tier is v2.** Cinder stores tier *metadata* today; the
-  S3 / GCS / R2 cold tier over OpenDAL and Iceberg lands behind the same trait at
-  v2.
+ S3 / GCS / R2 cold tier over OpenDAL and Iceberg lands behind the same trait at
+ v2.
 - **A real lifecycle timer** driving `evaluate_at` periodically is operator-owned
-  future work; the evaluator itself is pure today.
+ future work; the evaluator itself is pure today.
 
-## Key decisions
-
-ADR-0059 (torn-tail recovery), ADR-0060 (store fsync durability), ADR-0065
-(Cinder surfaces WAL persistence failures); observability bridges ADR-0038 and
-ADR-0039.

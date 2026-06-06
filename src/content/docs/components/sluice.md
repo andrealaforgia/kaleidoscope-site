@@ -27,12 +27,12 @@ contract; the v1 `FileBackedQueue` makes it durable.
 
 ```mermaid
 flowchart LR
-    P[producer] -->|enqueue| Q[FileBackedQueue]
-    Q -->|append op| WAL[(NDJSON WAL)]
-    Q -->|snapshot| Snap[(snapshot file)]
-    Snap -->|truncate| WAL
-    WAL -->|replay on open| Q
-    Q -.->|v2| Brokers[(Kafka / NATS / Redpanda)]
+ P[producer] -->|enqueue| Q[FileBackedQueue]
+ Q -->|append op| WAL[(NDJSON WAL)]
+ Q -->|snapshot| Snap[(snapshot file)]
+ Snap -->|truncate| WAL
+ WAL -->|replay on open| Q
+ Q -.->|v2| Brokers[(Kafka / NATS / Redpanda)]
 ```
 
 The durable shape is the platform-wide WAL-plus-snapshot pattern shared with the
@@ -55,13 +55,7 @@ added one additive error variant, `EnqueueError::PersistenceFailed`.
 ## Roadmap and limits
 
 - **External brokers are v2.** Kafka, NATS and Redpanda adapters are named to land
-  behind the same `Queue` trait, but are not implemented.
+ behind the same `Queue` trait, but are not implemented.
 - **Sieve is not yet wired to enqueue** through Sluice; that retrofit waited for
-  durability to make queueing meaningful.
+ durability to make queueing meaningful.
 
-## Key decisions
-
-Sluice has no dedicated ADR — its DESIGN collapsed into the implementation commit
-— but its durability is governed by the shared Earned-Trust ADRs it re-exports:
-ADR-0049 (honour fsync), ADR-0059 (torn-tail recovery), ADR-0060 (store fsync
-durability).

@@ -22,31 +22,31 @@ pass through untouched.
 ## How it works
 
 Sieve is a library that **decorates** Aperture's existing sink rather than adding
-a new hook, so Aperture's public surface does not move (ADR-0021).
+a new hook, so Aperture's public surface does not move.
 `SamplingSink<S, N>` wraps any inner `OtlpSink` and is itself an `OtlpSink`.
 
 ```mermaid
 flowchart LR
-    In[SinkRecord] --> S{variant?}
-    S -->|Logs / Metrics| Pass[forward unchanged]
-    S -->|Traces| Group[group spans by trace_id]
-    Group --> Dec{error in trace?}
-    Dec -->|yes| Keep[keep at 100%]
-    Dec -->|no| Rate["keep if xxh3_64(trace_id) < rate"]
-    Keep --> Rebuild[rebuild kept-only batch]
-    Rate --> Rebuild
-    Rebuild --> Inner[inner OtlpSink]
-    Pass --> Inner
+ In[SinkRecord] --> S{variant?}
+ S -->|Logs / Metrics| Pass[forward unchanged]
+ S -->|Traces| Group[group spans by trace_id]
+ Group --> Dec{error in trace?}
+ Dec -->|yes| Keep[keep at 100%]
+ Dec -->|no| Rate["keep if xxh3_64(trace_id) < rate"]
+ Keep --> Rebuild[rebuild kept-only batch]
+ Rate --> Rebuild
+ Rebuild --> Inner[inner OtlpSink]
+ Pass --> Inner
 ```
 
-- **Deterministic sampling (ADR-0018, ADR-0019).** The decision maps
-  `xxh3_64(trace_id)` into `[0, 1)` and keeps the trace when that value is below
-  the rate. The hash crate is pinned exactly, because its output is observable
-  behaviour — a change would silently move which traces cross the boundary.
+- **Deterministic sampling.** The decision maps
+ `xxh3_64(trace_id)` into `[0, 1)` and keeps the trace when that value is below
+ the rate. The hash crate is pinned exactly, because its output is observable
+ behaviour — a change would silently move which traces cross the boundary.
 - **Error bias first.** The error rule runs before the rate rule, so an error
-  trace is never dropped by sampling.
-- **Periodic summary (ADR-0020).** Three atomic counters on the hot path feed a
-  timer task that emits one summary line (`kept`, `dropped`, `rate`) per interval.
+ trace is never dropped by sampling.
+- **Periodic summary.** Three atomic counters on the hot path feed a
+ timer task that emits one summary line (`kept`, `dropped`, `rate`) per interval.
 
 ## What works today
 
@@ -62,14 +62,10 @@ in-memory store.
 ## Roadmap and limits
 
 - **Tail sampling is v1.** The `Sampler` trait is shaped so a future tail sampler
-  drops in without changing the decorator.
+ drops in without changing the decorator.
 - **One global rate only** — no per-tenant or per-service rates at v0.
 - **PII / payload scrubbing** is deferred.
 - The build journal describes Sieve as a decorator integrated against Aperture's
-  sink trait; whether the shipped `kaleidoscope-gateway` binary switches sampling
-  on in its default pipeline is a deployment choice rather than a fixed default.
+ sink trait; whether the shipped `kaleidoscope-gateway` binary switches sampling
+ on in its default pipeline is a deployment choice rather than a fixed default.
 
-## Key decisions
-
-ADR-0018 (public API), ADR-0019 (dependency pinning), ADR-0020 (summary
-aggregator), ADR-0021 (Aperture integration as a sink decorator).

@@ -23,27 +23,27 @@ crash-safe and idempotent.
 
 ```mermaid
 flowchart LR
-    A[edit rules/*.toml] --> V[pre-commit: loom validate]
-    V --> P[Pull Request]
-    P --> C[CI: loom plan]
-    C -->|merge| Y[loom apply, atomic]
-    Y --> B[beacon --rules]
+ A[edit rules/*.toml] --> V[pre-commit: loom validate]
+ V --> P[Pull Request]
+ P --> C[CI: loom plan]
+ C -->|merge| Y[loom apply, atomic]
+ Y --> B[beacon --rules]
 ```
 
 - **`loom validate`** walks a directory, runs Beacon's loader, and maps the result
-  to exit codes: `0` all good (an empty directory is also `0`, so a fresh team is
-  not blocked), `1` a rule rejected, `2` the directory unreadable. Diagnostics go
-  to stderr as `file:line: message`.
+ to exit codes: `0` all good (an empty directory is also `0`, so a fresh team is
+ not blocked), `1` a rule rejected, `2` the directory unreadable. Diagnostics go
+ to stderr as `file:line: message`.
 - **`loom plan`** computes a per-rule diff in pull-request shape (added, removed,
-  changed, plus a summary), with `--diff` for per-field deltas. The output is
-  byte-equal across runs — determinism comes from sorting in three places — so two
-  reviewers see the same diff and CI never reports phantom drift.
+ changed, plus a summary), with `--diff` for per-field deltas. The output is
+ byte-equal across runs — determinism comes from sorting in three places — so two
+ reviewers see the same diff and CI never reports phantom drift.
 - **`loom apply`** writes each file to a sibling temp, fsyncs and renames, so a
-  crash leaves either the old file or the new one, never a half-written one. It is
-  idempotent (a second run writes nothing), it preserves files it did not author,
-  and a broken source blocks the whole apply.
+ crash leaves either the old file or the new one, never a half-written one. It is
+ idempotent (a second run writes nothing), it preserves files it did not author,
+ and a broken source blocks the whole apply.
 - **`--json` output** carries a `loom.v0` schema tag, so a future `loom.v1` bumps
-  the version and consumers reject a mismatch cleanly.
+ the version and consumers reject a mismatch cleanly.
 
 ## What works today
 
@@ -55,13 +55,9 @@ code with Loom](/operating/config-as-code/).
 ## Roadmap and limits
 
 - **Beacon rules only at v0.** Sieve sampling, Prism dashboards and Aegis policies
-  are named to follow with the same pattern.
+ are named to follow with the same pattern.
 - **TOML, not yet CUE.** Migration to CUE is a parser swap behind the same
-  workflow when the Rust CUE ecosystem matures.
+ workflow when the Rust CUE ecosystem matures.
 - **The Git-backed authority** itself is a later deliverable; v0 operates on
-  directories on disk.
+ directories on disk.
 
-## Key decisions
-
-Loom has no dedicated ADR — its DESIGN collapsed into the implementation commit —
-and it mirrors Beacon's ADR-0034 (CUE-shaped, TOML on the wire) for its schema.

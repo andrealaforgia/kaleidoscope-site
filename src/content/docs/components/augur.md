@@ -27,25 +27,25 @@ carry forward to multivariate, structural and embedding-based detectors later.
 
 ```mermaid
 flowchart LR
-    P[Pulse f64 stream] --> Z[ZScoreObserver]
-    L[Lumen log body] --> R[RareEventObserver]
-    S[Ray span name] --> R
-    Z --> A[Anomaly events]
-    R --> A
-    A -.->|v1| LLM[LLM summariser]
+ P[Pulse f64 stream] --> Z[ZScoreObserver]
+ L[Lumen log body] --> R[RareEventObserver]
+ S[Ray span name] --> R
+ Z --> A[Anomaly events]
+ R --> A
+ A -.->|v1| LLM[LLM summariser]
 ```
 
 - **Z-score, by Welford (1962).** `ZScoreObserver` keeps an online mean and
-  variance; after a warm-up window, an observation whose absolute z-score crosses
-  the threshold fires, and a sustained shift adapts the baseline toward the new
-  regime.
+ variance; after a warm-up window, an observation whose absolute z-score crosses
+ the threshold fires, and a sustained shift adapts the baseline toward the new
+ regime.
 - **Rare events by frequency.** `RareEventObserver` keeps a frequency table and
-  fires the first time an event's observed fraction falls at or below the rarity
-  threshold.
+ fires the first time an event's observed fraction falls at or below the rarity
+ threshold.
 - **No ML stack, on purpose.** No numpy, no scikit-learn, no embeddings, no LLM
-  runtime. Augur depends on the tenant id type and the standard library, full
-  stop. The point at v0 is a correct, cheap, explainable baseline behind a trait
-  that a heavier detector can replace without changing callers.
+ runtime. Augur depends on the tenant id type and the standard library, full
+ stop. The point at v0 is a correct, cheap, explainable baseline behind a trait
+ that a heavier detector can replace without changing callers.
 
 ## What works today
 
@@ -59,10 +59,6 @@ to the point [Pulse](/components/pulse/) stored.
 ## Roadmap and limits
 
 - **No ML at v0.** Bayesian online change-point detection, embedding clustering
-  and LLM summarisation are named for v1, all behind the same one-method trait.
+ and LLM summarisation are named for v1, all behind the same one-method trait.
 - **Stateless across restarts** — Augur holds its baselines in memory.
 
-## Key decisions
-
-Augur has no component-specific ADR; its design collapsed into its implementation
-commit. The generic `AnomalyObserver<T>` trait is the load-bearing decision.

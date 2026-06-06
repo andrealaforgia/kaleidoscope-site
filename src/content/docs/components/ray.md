@@ -27,30 +27,29 @@ hex, the form every tracing tool prints.
 
 ```mermaid
 flowchart LR
-    Ingest[SpanBatch] -->|apply_ingest| ByTrace["by trace_id"]
-    Ingest -->|apply_ingest| ByService["by service"]
-    ByTrace -->|snapshot once| Snap[(JSON snapshot)]
-    Snap -->|on open| ByTrace
-    Snap -->|rebuild| ByService
-    Client -->|"/api/v1/traces?service="| API[trace-query-api]
-    Client -->|/api/v1/traces/by_id| API
-    API --> ByTrace
-    API --> ByService
+ Ingest[SpanBatch] -->|apply_ingest| ByTrace["by trace_id"]
+ Ingest -->|apply_ingest| ByService["by service"]
+ ByTrace -->|snapshot once| Snap[(JSON snapshot)]
+ Snap -->|on open| ByTrace
+ Snap -->|rebuild| ByService
+ Client -->|"/api/v1/traces?service="| API[trace-query-api]
+ Client -->|/api/v1/traces/by_id| API
+ API --> ByTrace
+ API --> ByService
 ```
 
 - **Dual index.** A map by trace id and a map by service, each span cloned into
-  both. The 2× memory buys O(1) lookup on both axes; the columnar v1 substrate is
-  intended to collapse this.
+ both. The 2× memory buys O(1) lookup on both axes; the columnar v1 substrate is
+ intended to collapse this.
 - **One ingest routine, no drift.** A single `apply_ingest` inserts into both maps
-  and is the only code that does so; live ingest, WAL replay and snapshot recovery
-  all call it. The snapshot persists spans once and rebuilds the service index on
-  open, so there is no second copy to fall out of step.
+ and is the only code that does so; live ingest, WAL replay and snapshot recovery
+ all call it. The snapshot persists spans once and rebuilds the service index on
+ open, so there is no second copy to fall out of step.
 - **The read API (`trace-query-api`).** `GET /api/v1/traces?service=&start=&end=`
-  returns the in-window spans for a service (the `service` parameter is required —
-  missing or empty is a `400`); `GET /api/v1/traces/by_id?trace_id=<32-hex>` pulls
-  a whole trace, returning a calm `200 []` for an unknown id, never a `404`.
-- **Durability and read caps** are the shared platform machinery (ADR-0059,
-  ADR-0060, ADR-0050).
+ returns the in-window spans for a service (the `service` parameter is required —
+ missing or empty is a `400`); `GET /api/v1/traces/by_id?trace_id=<32-hex>` pulls
+ a whole trace, returning a calm `200 []` for an unknown id, never a `404`.
+- **Durability and read caps** are the shared platform machinery.
 
 ## What works today
 
@@ -61,13 +60,8 @@ the two endpoints above. See [Query your telemetry](/getting-started/querying/).
 ## Roadmap and limits
 
 - **The shipped v1 is a file-backed WAL+snapshot store, not the columnar engine.**
-  The trace-id-partitioned columnar (Iceberg-on-Parquet) layout is named but not
-  yet implemented.
+ The trace-id-partitioned columnar (Iceberg-on-Parquet) layout is named but not
+ yet implemented.
 - **Richer predicates and TraceQL** — span-event and link predicates, attribute-
-  path matching — are deferred.
+ path matching — are deferred.
 
-## Key decisions
-
-ADR-0048 (read API contract and crate layout), ADR-0053 (lookup-by-id), ADR-0050
-(read caps), ADR-0054 (shared read-tier crate), ADR-0059 (torn-tail recovery),
-ADR-0060 (fsync durability).

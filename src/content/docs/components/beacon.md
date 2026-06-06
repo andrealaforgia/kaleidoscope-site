@@ -24,39 +24,39 @@ state persists, so a firing alert stays firing across a restart.
 
 ```mermaid
 flowchart LR
-    Rules[rules/*.toml] --> Loader[loader + diagnostics]
-    Loader --> Eval[evaluator]
-    Eval --> Prom[PromQL HTTP backend]
-    Eval --> SM[state machine]
-    SM --> Inhibit[inhibition + grouping]
-    Inhibit --> Sinks[sink adapters]
-    SLO["[[slo]] declaration"] --> Synth[MWMBR synthesis] --> Loader
-    State[(durable rule state)] <--> SM
+ Rules[rules/*.toml] --> Loader[loader + diagnostics]
+ Loader --> Eval[evaluator]
+ Eval --> Prom[PromQL HTTP backend]
+ Eval --> SM[state machine]
+ SM --> Inhibit[inhibition + grouping]
+ Inhibit --> Sinks[sink adapters]
+ SLO["[[slo]] declaration"] --> Synth[MWMBR synthesis] --> Loader
+ State[(durable rule state)] <--> SM
 ```
 
-- **Two-crate workspace (ADR-0033).** A pure library plus a thin `beacon-server`
-  binary; the library has no runtime types in its public API.
-- **Rules: CUE-shaped, TOML on the wire (ADR-0034).** A spike found no
-  good-enough Apache-licensed Rust CUE library, so v0 parses TOML with
-  `deny_unknown_fields` while keeping the CUE-shaped schema. Diagnostics give
-  file, line and a "did you mean" suggestion. When [Loom](/components/loom/)'s CUE
-  authority matures, it compiles CUE down to the same rule shape.
-- **Pure state machine (ADR-0037).** `Inactive → Pending → Firing → Resolved`,
-  total over every input, evaluated against a scheduler seam.
-- **Storm collapse (ADR-0035 + inhibition).** A twenty-rule storm caused by one
-  backend outage collapses to a single notification, then releases correctly when
-  the upstream cause resolves. The behaviour is deterministic.
-- **SLO synthesis (ADR-0036, ADR-0067).** One SLO declaration becomes exactly four
-  PromQL alerts, byte-aligned to the Google SRE workbook's multi-window
-  multi-burn-rate table, so you are paged only when the burn rate truly warrants
-  it.
-- **Durable rule state (ADR-0040).** A keyed-latest-wins store — alert state is
-  the current answer to a question, not a log of events — so a restart during an
-  incident does not lose judgement. A corrupt state file makes the server refuse
-  to start rather than start blind.
-- **Hot reload (ADR-0063).** On `SIGHUP` the new catalogue is built and validated
-  completely before anything old is touched; a malformed edit keeps the previous
-  rules with a refusal event, and a firing alert keeps its state across the swap.
+- **Two-crate workspace.** A pure library plus a thin `beacon-server`
+ binary; the library has no runtime types in its public API.
+- **Rules: CUE-shaped, TOML on the wire.** A spike found no
+ good-enough Apache-licensed Rust CUE library, so v0 parses TOML with
+ `deny_unknown_fields` while keeping the CUE-shaped schema. Diagnostics give
+ file, line and a "did you mean" suggestion. When [Loom](/components/loom/)'s CUE
+ authority matures, it compiles CUE down to the same rule shape.
+- **Pure state machine.** `Inactive → Pending → Firing → Resolved`,
+ total over every input, evaluated against a scheduler seam.
+- **Storm collapse.** A twenty-rule storm caused by one
+ backend outage collapses to a single notification, then releases correctly when
+ the upstream cause resolves. The behaviour is deterministic.
+- **SLO synthesis.** One SLO declaration becomes exactly four
+ PromQL alerts, byte-aligned to the Google SRE workbook's multi-window
+ multi-burn-rate table, so you are paged only when the burn rate truly warrants
+ it.
+- **Durable rule state.** A keyed-latest-wins store — alert state is
+ the current answer to a question, not a log of events — so a restart during an
+ incident does not lose judgement. A corrupt state file makes the server refuse
+ to start rather than start blind.
+- **Hot reload.** On `SIGHUP` the new catalogue is built and validated
+ completely before anything old is touched; a malformed edit keeps the previous
+ rules with a refusal event, and a firing alert keeps its state across the swap.
 
 ## What works today
 
@@ -70,13 +70,7 @@ acceptance tests; durable rule state added more at a 100% mutation kill rate. Se
 ## Roadmap and limits
 
 - **SMTP sink is deferred.** Four HTTP sinks ship; the design names SMTP but it is
-  not in the shipped set.
+ not in the shipped set.
 - **Instant queries only at v0** for rule evaluation; range queries are later.
 - **Native CUE authoring** arrives with Loom.
 
-## Key decisions
-
-ADR-0033 (crate layout), ADR-0034 (rule schema and diagnostics), ADR-0035 (sink
-trait and redaction), ADR-0036 and ADR-0067 (SLO MWMBR synthesis), ADR-0037
-(evaluator and scheduler seam), ADR-0040 (durable rule state), ADR-0063 (SIGHUP
-reload).

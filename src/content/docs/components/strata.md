@@ -28,20 +28,20 @@ the heaviest payload needed the lightest durability machinery of the six pillars
 
 ```mermaid
 flowchart LR
-    Ingest[ProfileBatch] -->|apply_ingest| Idx["by (tenant, service)"]
-    Idx -->|snapshot| Snap[(JSON snapshot)]
-    Snap -->|on open| Recover[recover, replay, sort]
-    WAL[(NDJSON WAL)] --> Recover
-    Q[query service + range + type] --> Idx
+ Ingest[ProfileBatch] -->|apply_ingest| Idx["by (tenant, service)"]
+ Idx -->|snapshot| Snap[(JSON snapshot)]
+ Snap -->|on open| Recover[recover, replay, sort]
+ WAL[(NDJSON WAL)] --> Recover
+ Q[query service + range + type] --> Idx
 ```
 
 - **Single index.** A map keyed by tenant and service, since both v0 queries hit
-  the service axis — no need for [Ray's](/components/ray/) dual index.
+ the service axis — no need for [Ray's](/components/ray/) dual index.
 - **One ingest routine** serves the live path and recovery, so they cannot drift;
-  it keeps the v0 rule of dropping profiles with no service name from the index.
+ it keeps the v0 rule of dropping profiles with no service name from the index.
 - **Durability** is the shared WAL-plus-snapshot machinery with real fsync and
-  torn-tail recovery (ADR-0059, ADR-0060). The KPIs held at first measure with no
-  delivery-time adjustment — by the sixth pillar the pattern was settled.
+ torn-tail recovery. The KPIs held at first measure with no
+ delivery-time adjustment — by the sixth pillar the pattern was settled.
 
 ## What works today
 
@@ -51,16 +51,11 @@ Per-tenant, per-service ingest and `(service, range)` queries with a
 ## Roadmap and limits
 
 - **No read API yet.** Unlike logs, metrics and traces, profiles do not yet have
-  an HTTP read endpoint, and profiles are not in the gateway's storage-sink path.
+ an HTTP read endpoint, and profiles are not in the gateway's storage-sink path.
 - **Passive sink only.** Continuous profile scraping is roadmap, not shipped.
 - **The shipped v1 is a file-backed WAL+snapshot store.** The columnar substrate
-  and symbolisation (gimli/addr2line) are named but not implemented, and v1 will
-  align with the OpenTelemetry Profiles signal as it stabilises upstream.
+ and symbolisation (gimli/addr2line) are named but not implemented, and v1 will
+ align with the OpenTelemetry Profiles signal as it stabilises upstream.
 - **Sample, location and function predicates** are deferred — only `profile_type`
-  filtering exists today.
+ filtering exists today.
 
-## Key decisions
-
-Strata has no component-specific ADR; its design history lives in its feature
-wave-decisions. It inherits the shared durability ADRs: ADR-0059 (torn-tail
-recovery), ADR-0060 (store fsync durability).

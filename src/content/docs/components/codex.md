@@ -25,26 +25,26 @@ composing the resource and before constructing any OpenTelemetry types.
 
 ```mermaid
 flowchart LR
-    Attrs[composed attributes] --> V[SchemaCatalogue.validate]
-    V --> Corpus{name blessed?}
-    Corpus -->|yes| OK[no violation]
-    Corpus -->|no| Lev["Levenshtein <= 2 match?"]
-    Lev -->|hit| Suggest["violation + did-you-mean"]
-    Lev -->|miss| Unknown[violation: Unknown]
+ Attrs[composed attributes] --> V[SchemaCatalogue.validate]
+ V --> Corpus{name blessed?}
+ Corpus -->|yes| OK[no violation]
+ Corpus -->|no| Lev["Levenshtein <= 2 match?"]
+ Lev -->|hit| Suggest["violation + did-you-mean"]
+ Lev -->|miss| Unknown[violation: Unknown]
 ```
 
-- **The corpus (ADR-0022, ADR-0023).** A checked-in static slice of the pinned
-  semantic-conventions attribute set, plus the three house attributes kept in a
-  separate slice so a bad regeneration cannot drop them. An `xtask` regenerates
-  the corpus from upstream when the pin moves, producing a visible PR diff.
+- **The corpus.** A checked-in static slice of the pinned
+ semantic-conventions attribute set, plus the three house attributes kept in a
+ separate slice so a bad regeneration cannot drop them. An `xtask` regenerates
+ the corpus from upstream when the pin moves, producing a visible PR diff.
 - **In-tree Levenshtein.** A small two-row dynamic-programming matrix over
-  characters, with the suggestion threshold locked at edit distance 2. No
-  dependency is pulled in for it.
+ characters, with the suggestion threshold locked at edit distance 2. No
+ dependency is pulled in for it.
 - **Default-warn, opt-in-strict.** The integration behaviour lives in Spark:
-  default mode emits one warning per misconfigured init; strict mode returns an
-  error so CI fails fast.
-- **Zero runtime dependencies** beyond the standard library (ADR-0024). The
-  upstream semconv crate is used only by the regenerator, never at runtime.
+ default mode emits one warning per misconfigured init; strict mode returns an
+ error so CI fails fast.
+- **Zero runtime dependencies** beyond the standard library. The
+ upstream semconv crate is used only by the regenerator, never at runtime.
 
 ## What works today
 
@@ -58,11 +58,7 @@ stable library — Codex stores nothing.
 ## Roadmap and limits
 
 - **More match kinds** (regex, glob, version-pattern) and more violation kinds
-  (deprecated, misnamed) are reserved by the non-exhaustive enums but not
-  implemented.
+ (deprecated, misnamed) are reserved by the non-exhaustive enums but not
+ implemented.
 - **No per-tenant overlays** and a single pinned semconv version at v0.
 
-## Key decisions
-
-ADR-0022 (public API), ADR-0023 (corpus regeneration ritual), ADR-0024
-(dependency pinning), ADR-0025 (Spark integration).
