@@ -29,9 +29,9 @@ The binary lands at `./target/release/kaleidoscope-cli`.
 
 ## Ingest a log record
 
-Kaleidoscope's CLI reads newline-delimited JSON (`NDJSON`) `LogRecord` lines
-from stdin and writes them into a durable, tenant-scoped store. Each invocation
-takes a tenant id and a data directory.
+Kaleidoscope's CLI reads newline-delimited JSON log records from stdin and writes
+them into a durable, tenant-scoped store. Each invocation takes a tenant id and a
+data directory.
 
 ```sh
 echo '{"observed_time_unix_nano":100,"severity_number":9,"severity_text":"INFO","body":"hello","attributes":{},"resource_attributes":{"service.name":"checkout"},"trace_id":null,"span_id":null}' \

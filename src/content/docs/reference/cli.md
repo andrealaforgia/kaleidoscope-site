@@ -31,9 +31,10 @@ A few subcommands deviate, noted below. Unknown flags are rejected with exit cod
 kaleidoscope-cli ingest <tenant> <data-dir> [--observe-otlp <path>]
 ```
 
-Reads NDJSON `LogRecord` lines from stdin into the durable store. **All or
-nothing**: if any line fails to parse, nothing is committed and the offending
-line number is reported, so a re-run after the fix ingests exactly once.
+Reads newline-delimited JSON log records from stdin into the durable store.
+**All or nothing**: if any line fails to parse, nothing is committed and the
+offending line number is reported, so a re-run after the fix ingests exactly
+once.
 
 ### `read`
 
@@ -118,7 +119,6 @@ collector you already run. See [Self-observability](/operating/self-observabilit
 
 ## Coverage
 
-Every `TieringStore` method is reachable from a single CLI invocation — `place`,
-`get-tier`, `migrate`, `list_by_tier` (via `list-items`) and `evaluate_at` (via
-`evaluate-policy`) — and every `LogStore` method is reachable too. The CLI is a
-working operator surface, not a library wrapper.
+The CLI covers the full tiering lifecycle — place an item, look up its tier, move
+it, list a tier, and run the ageing policy — and the full log read path. It is a
+working operator surface, not a thin wrapper.

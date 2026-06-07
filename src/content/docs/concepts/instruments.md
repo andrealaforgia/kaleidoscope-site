@@ -73,7 +73,7 @@ and S3 archive SKUs; the object-storage cold tier itself is a later version.
 ## Cross-cutting analysis
 
 **Augur** is anomaly detection and AIops. At v0 it is hand-rolled classical
-statistics — Welford's online variance and frequency tables, no ML stack — with
+statistics — running mean-and-variance and frequency tables, no ML stack — with
 a generic trait that later versions lift to change-point detection and embedding
 clustering. It replaces Datadog Watchdog or New Relic AI.
 

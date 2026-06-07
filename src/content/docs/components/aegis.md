@@ -1,6 +1,6 @@
 ---
 title: Aegis
-description: Kaleidoscope's identity component — JWT validation, a tenant catalogue, two roles and an audit log, now gating Aperture's ingest path.
+description: Kaleidoscope's identity component — token validation, a tenant catalogue, two roles and an audit log, now gating the gateway's ingest path.
 ---
 
 <p>
@@ -8,70 +8,65 @@ description: Kaleidoscope's identity component — JWT validation, a tenant cata
 </p>
 
 Aegis is identity: authentication, authorization, multi-tenancy and audit. It
-turns a bearer token into a verified tenant context or a typed refusal, and
-records exactly one audit event for every decision. Unlike the vendors' offerings,
-it is in the free product, always.
+turns a bearer token into a verified tenant or a clear refusal, and records one
+audit entry for every decision. Unlike the vendors' offerings, it is in the free
+product, always.
 
 ## What it does
 
-Aegis takes a JWT, validates its signature, expiry, issuer and audience, looks the
-carried tenant up in an operator-authored catalogue, and returns a
-`TenantContext { tenant_id, role }` or one of eight typed `ValidationError`s.
-Every call emits one structured `tracing` event — an `info` on allow, a `warn` on
-deny — with stable field names, so the audit trail is complete by construction.
+Aegis takes a bearer token (a JWT), checks its signature, expiry, issuer and
+audience, looks the tenant it names up in an operator-managed catalogue, and
+returns the verified tenant and role or a clear reason for refusal. Every check
+emits one audit event — allowed or denied — with stable fields, so the audit trail
+is complete by construction.
 
 ## How it works
 
 ```mermaid
 flowchart LR
- R[request + JWT] --> V[Validator.validate]
- V --> Sig{signature, exp, iss, aud ok?}
- Sig -->|no| E[ValidationError + warn audit]
- Sig -->|yes| Cat{tenant in catalogue?}
- Cat -->|no| E
- Cat -->|yes| C[TenantContext + info audit]
+    R[request + token] --> V[Aegis check]
+    V --> Sig{signature, expiry, issuer, audience ok?}
+    Sig -->|no| E[refused + audit]
+    Sig -->|yes| Cat{tenant in catalogue?}
+    Cat -->|no| E
+    Cat -->|yes| C[verified tenant + role + audit]
 ```
 
-- **HS256 JWT validation.** The signing key is pre-shared bytes; the decoding key
- is computed once at construction, so `validate` does no I/O and no network call.
- The algorithm is pinned to HS256 to avoid algorithm-confusion attacks.
-- **TOML tenant catalogue.** Loaded with `deny_unknown_fields` and duplicate-id
- rejection, with O(1) membership checks.
-- **Two roles.** `Viewer` and `Operator`.
-- **Audit by tracing.** Your subscriber routes the events to [Lumen](/components/lumen/)
- once you run it.
+The signing key is a shared secret, loaded once, so a check does no network call
+and is fast. The tenant catalogue is a TOML file, rejected loudly if it has
+unknown fields or duplicate tenants. There are two roles, viewer and operator, and
+the audit events are emitted in a standard form that your log pipeline can route
+into [Lumen](/components/lumen/).
 
-### Gating Aperture ingest
+### Gating the gateway
 
-The `aegis-ingest-auth-v0` feature wires this validator onto
-[Aperture's](/components/aperture/) live ingest path, fail-closed. Aperture reads
-a `[aperture.security.auth.jwt]` block (issuer, audience, `secret_file`,
-`catalogue_path`), validates the bearer token on every gRPC and HTTP request
-before the body reaches a sink, and refuses to start without a complete config.
-The validated tenant is carried with each record through the pipeline as a
-type-level guarantee. See [Run the gateway end to end](/getting-started/gateway/).
+Aegis now guards [Aperture's](/components/aperture/) ingest path, fail-closed. The
+gateway is configured with an issuer, audience, a path to the signing secret and a
+path to the tenant catalogue; it checks the bearer token on every request before
+the telemetry is accepted, and refuses to start without a complete configuration.
+The verified tenant travels with the telemetry through the pipeline. See [Run the
+gateway end to end](/getting-started/gateway/).
 
 ## What works today
 
-The public surface includes `Validator`, `ValidatorConfig`, `TenantContext`,
-`TenantId`, `Role`, `ValidationError`, and the catalogue loader. Validation does
-no I/O, so it is fast (sub-millisecond), and every decision emits exactly one
-audit event. On the ingest path, both gRPC and HTTP reject the full range of
-invalid tokens, the gateway refuses to start without a complete auth config, and
-the signing secret is read from a file by path and never logged.
+Token checking that does no network call and so is fast, a TOML tenant catalogue,
+two roles, and one audit event per decision. On the ingest path, both gRPC and
+HTTP reject the full range of invalid tokens, the gateway refuses to start without
+a complete auth configuration, and the signing secret is read from a file and
+never logged.
 
 ## Roadmap and limits
 
-- **HS256 only.** Asymmetric keys (RS256) and JWKS rotation are a later version.
+- **Shared-secret signing only.** Public-key signing and key rotation are a later
+  version.
 - **Authentication, not yet authorization, on ingest.** At v0 any valid token for
- a catalogued tenant may ingest; role-gating is deferred.
-- **Read-path auth** (the query APIs) is deferred to a future feature.
-- **The heavier machinery** — SPIFFE/SPIRE, OPA policy, Dex/Keycloak federation,
- OpenBao secrets, a database-backed catalogue — is all v1 or later.
+  a known tenant may ingest; restricting by role is deferred.
+- **Read-path authentication** (the query APIs) is deferred to a future feature.
+- **The heavier machinery** — workload identity, policy engines, external identity
+  providers, secret managers and a database-backed catalogue — is all later.
 
-:::note
-The crate's own doc comment currently overstates this as "issuer + JWKS"; the
-validator is HS256 pre-shared-key only, with JWKS reserved for v1. The project
-tracks that wording as a doc fix.
-:::
+## Key points
 
+The query APIs are not yet behind Aegis, and the ingest path checks a token's
+validity but does not yet restrict what a valid token may do. Plan for that when
+weighing it for production.

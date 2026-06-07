@@ -51,25 +51,18 @@ The single most important distinction for an adopter. "Durable" here means the
 data survives a process restart; "v0" means an in-memory adapter that loses its
 data when the process exits.
 
-All six storage pillars now ship a **durable v1 adapter** behind the same trait
-as their v0 in-memory one:
+All six storage pillars now have a **durable, file-backed version** that survives
+a restart, behind the same interface as their in-memory one: logs (Lumen),
+metrics (Pulse), traces (Ray), profiles (Strata), the tiering ledger (Cinder) and
+the ingest buffer (Sluice).
 
-| Pillar | Durable store |
-| --- | --- |
-| Logs (Lumen) | `FileBackedLogStore` |
-| Metrics (Pulse) | `FileBackedMetricStore` |
-| Traces (Ray) | `FileBackedTraceStore` |
-| Profiles (Strata) | `FileBackedProfileStore` |
-| Tiering ledger (Cinder) | `FileBackedTieringStore` |
-| Ingest buffer (Sluice) | `FileBackedQueue` |
+Alerting state is durable too, so a firing alert survives a restart instead of
+re-paging the on-call engineer for an incident they are already handling.
 
-Alerting state is durable too (`FileBackedRuleStateStore`), so a firing alert
-survives a restart instead of re-paging the on-call engineer for an incident
-they are already handling.
-
-The durable stores `fsync` acknowledged writes and recover an intact prefix after
-a crash, and the gateway refuses to start if the underlying disk does not honour
-`fsync`. See [Durability and Earned Trust](/operating/durability/).
+The durable stores flush acknowledged writes to disk and recover an intact prefix
+after a crash, and the gateway refuses to start if the underlying disk does not
+honour those flushes. See [Durability and Earned
+Trust](/operating/durability/).
 
 The **integration-plane** components (Spark, Aperture, Sieve, Codex, Prism,
 Augur, Aegis) are still at **v0**. They work, they are tested, but several keep

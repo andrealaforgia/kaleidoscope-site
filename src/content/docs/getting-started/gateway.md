@@ -14,7 +14,7 @@ platform rather than a library.
 flowchart LR
     SDK[OTLP client] -->|gRPC :4317 / HTTP :4318| GW[kaleidoscope-gateway]
     GW -->|validate| H[conformance harness]
-    GW -->|accepted| SINK[StorageSink]
+    GW -->|accepted| SINK[storage layer]
     SINK -->|logs| Lumen[(Lumen)]
     SINK -->|traces| Ray[(Ray)]
     SINK -->|metrics| Pulse[(Pulse)]
@@ -27,12 +27,11 @@ flowchart LR
 ## What the gateway does
 
 The `kaleidoscope-gateway` binary listens for OTLP over gRPC on `:4317` and over
-HTTP/protobuf on `:4318`. Every incoming payload is validated against the
-conformance harness before anything else happens. Accepted payloads are handed
-to a `StorageSink`, which translates each signal into its pillar's shape and
-persists it: **logs to Lumen, traces to Ray, metrics to Pulse**. Because those
-stores are the durable v1 adapters, a span sent to `:4317` is queryable out of
-Ray even after a restart.
+HTTP/protobuf on `:4318`. Every incoming payload is validated for OTLP conformance
+before anything else happens. Accepted telemetry is then translated into each
+pillar's shape and persisted: **logs to Lumen, traces to Ray, metrics to Pulse**.
+Because those stores are durable, a span sent to `:4317` is queryable out of Ray
+even after a restart.
 
 ### Honest behaviour at the seams
 
@@ -76,18 +75,20 @@ the configured secret and must carry `iss` and `aud` matching the config, a
 `tenant_id` present in the catalogue, a `kaleidoscope_role` (`viewer` or
 `operator`), and a future `exp`.
 
-A rejected request stores nothing: gRPC returns `Status::unauthenticated`, HTTP
-returns `401` with a `WWW-Authenticate: Bearer` challenge, and the body is never
-re-encoded or handed to a sink. Exactly one allow/deny line is audited per
+A rejected request stores nothing: over gRPC it is rejected as unauthenticated,
+over HTTP it returns `401` with a `WWW-Authenticate: Bearer` challenge, and the
+telemetry never reaches storage. Exactly one allow-or-deny line is audited per
 request.
 
 ## Send some telemetry
 
 Point any OpenTelemetry SDK or the OpenTelemetry Collector's OTLP exporter at the
-gateway's endpoints, with the bearer token configured on the exporter. From an
-application instrumented with the Kaleidoscope SDK (Spark) or any OTel SDK, set
-the OTLP endpoint to your gateway host, attach the `Authorization: Bearer <jwt>`
-header, and emit a span, a metric, or a log as usual.
+gateway's endpoints, with the bearer token configured on the exporter. With the
+Kaleidoscope SDK ([Spark](/components/spark/)), set the OTLP endpoint to your
+gateway host, set a bearer token in Spark's configuration, and emit a span, a
+metric, or a log as usual. With any other OTel SDK, attach the
+`Authorization: Bearer <jwt>` header yourself (for example via
+`OTEL_EXPORTER_OTLP_HEADERS`).
 
 A minimal smoke test is to run the gateway with an auth block configured, send
 one span over gRPC with a valid bearer token, and then read it back through the

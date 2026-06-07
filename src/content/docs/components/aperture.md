@@ -1,6 +1,6 @@
 ---
 title: Aperture
-description: Kaleidoscope's OTLP ingest gateway — receives telemetry over gRPC and HTTP, validates every payload, authenticates the tenant, and hands accepted records to a pluggable sink.
+description: Kaleidoscope's OTLP ingest gateway — receives telemetry over gRPC and HTTP, validates every payload, authenticates the tenant, and hands accepted records on.
 ---
 
 <p>
@@ -8,76 +8,68 @@ description: Kaleidoscope's OTLP ingest gateway — receives telemetry over gRPC
 </p>
 
 Aperture is the front door. It is the first network-facing component: a
-long-lived service that listens for OTLP, validates every payload against the
-conformance harness, authenticates the request, and hands accepted records to a
-pluggable sink. It holds no durable state of its own.
+long-lived service that receives OTLP, validates every payload, authenticates the
+request, and passes accepted telemetry on for storage. It holds no data of its
+own.
 
 ## What it does
 
-Aperture listens on gRPC (`:4317`) and HTTP/protobuf (`:4318`) for all three
-OTLP-stable signals. Each request passes a concurrency permit, then bearer-token
-authentication, then conformance validation, before its records reach the
-configured sink. It also exposes `/healthz` and `/readyz`, applies per-transport
-backpressure, drains gracefully on shutdown, and can forward OTLP to a downstream
-endpoint.
+Aperture listens for OTLP over gRPC (`:4317`) and HTTP/protobuf (`:4318`) for all
+three signals. Each request is admitted only if there is capacity, the bearer
+token is valid, and the payload is well-formed; then its telemetry is passed
+downstream. Aperture also exposes health and readiness endpoints, pushes back
+under load rather than queueing, drains in flight work on shutdown, and can
+forward OTLP to a downstream backend.
 
 ## How it works
 
 ```mermaid
 flowchart LR
- Client[OTLP client] -->|gRPC :4317 / HTTP :4318| Permit{concurrency permit}
- Permit -->|refused| Busy[gRPC RESOURCE_EXHAUSTED / HTTP 503]
- Permit -->|acquired| Auth{valid bearer token?}
- Auth -->|no| Deny[gRPC UNAUTHENTICATED / HTTP 401]
- Auth -->|yes| Validate[conformance harness]
- Validate --> Sink["OtlpSink::accept (SinkRecord)"]
+    Client[OTLP client] -->|gRPC :4317 / HTTP :4318| Cap{capacity?}
+    Cap -->|full| Busy[refused: try again]
+    Cap -->|ok| Auth{valid bearer token?}
+    Auth -->|no| Deny[rejected: 401 / unauthenticated]
+    Auth -->|yes| Validate[validate payload]
+    Validate --> Down[pass to storage / downstream]
 ```
 
-The load-bearing decisions:
+The decisions that matter to an operator:
 
-- **Transport stack.** `tonic` for gRPC and `axum`/`hyper` for HTTP on
- one Tokio runtime; the harness validation runs synchronously on the receiving
- thread because it is fast and CPU-bound.
-- **The sink port.** `OtlpSink::accept(SinkRecord)` is the single
- boundary; `SinkRecord` is a three-variant enum (Logs / Traces / Metrics)
- carrying the OTLP type unwrapped. This is the seam [Sieve](/components/sieve/)
- decorates and the gateway uses to persist into the storage pillars.
-- **Backpressure.** A per-transport semaphore refuses deterministically
- when full — gRPC `RESOURCE_EXHAUSTED`, HTTP `503` with `Retry-After` — rather
- than queueing or silently dropping. There is no internal queue; that is
- [Sluice's](/components/sluice/) job. The default cap is 1024 in-flight per
- transport, which operators must account for when sizing memory.
-- **Refuse, don't pretend.** Enabling the `tls.enabled` or
- `auth.spiffe.enabled` knobs makes Aperture *refuse to start* (exit 2, nothing
- bound) rather than bind plaintext while implying encryption.
-- **Honest failure surfacing.** A serving-loop death after bind flips
- readiness to a sticky failed state and exits with a distinct code, rather than
- being swallowed.
+- **Validation first.** Every payload is checked for OTLP conformance before
+  anything else happens to it.
+- **Backpressure, not queueing.** When Aperture is at capacity it refuses new
+  requests with a clear "try again" signal (a `503` with `Retry-After` over HTTP)
+  rather than buffering them or dropping them silently. Durable buffering is
+  [Sluice's](/components/sluice/) job. The default ceiling is 1024 requests in
+  flight per protocol, which you account for when sizing memory.
+- **Refuse, don't pretend.** If you enable a security feature Aperture cannot yet
+  honour (TLS or SPIFFE), it refuses to start rather than binding in plaintext
+  while implying encryption.
+- **Honest failure.** If the serving loop dies after start-up, readiness flips to
+  unhealthy and the process exits with a distinct code, rather than appearing to
+  run.
 
 ### Authenticated ingest
 
-As of `aegis-ingest-auth-v0`, Aperture builds an
-[Aegis](/components/aegis/) HS256 JWT validator once and checks the bearer token
-on every request before the body reaches a sink — fail-closed. A gateway with a
-missing or incomplete `[aperture.security.auth.jwt]` block refuses to start. The
-validated tenant rides with each record through the pipeline. See [Run the
-gateway end to end](/getting-started/gateway/) for the configuration.
+Aperture authenticates every request against an [Aegis](/components/aegis/) JWT
+before the telemetry is accepted, fail-closed. A gateway without a complete auth
+configuration refuses to start, and the authenticated tenant travels with the
+telemetry through the rest of the pipeline. See [Run the gateway end to
+end](/getting-started/gateway/) for the configuration.
 
 ## What works today
 
-Configuration is TOML via `figment` with `deny_unknown_fields`, so a misspelled
-key fails loudly. Keys cover bind addresses, max message sizes, per-transport
-concurrency, sink kind, forwarding endpoint and timeout, and the drain deadline.
-Observability is JSON `tracing` to stderr with a closed event vocabulary.
-Aperture is wired into the runnable `kaleidoscope-gateway` binary, which persists
-received telemetry into the durable pillars.
+Configuration is TOML, and an unknown key is rejected loudly rather than ignored.
+You can set the bind addresses, message-size limits, per-protocol concurrency, the
+sink, a forwarding endpoint, and the shutdown drain deadline. Logs are emitted as
+structured JSON to stderr. Aperture runs inside the `kaleidoscope-gateway` binary,
+which persists received telemetry into the durable stores.
 
 ## Roadmap and limits
 
-- **TLS and SPIFFE** are not implemented; the knobs exist as forward-compatible
- schema, defaulted off, and Aperture refuses to start if you turn them on. Real
- transport security is Phase 2.
-- **No internal queue** — backpressure refuses rather than buffers; durable
- buffering is Sluice's remit.
-- **No self-metrics output** (Prometheus / OTLP-out) at v0.
-
+- **TLS and SPIFFE** are not implemented; the settings exist for forward
+  compatibility, default off, and Aperture refuses to start if you turn them on.
+  Real transport security is Phase 2.
+- **No internal queue** — Aperture pushes back rather than buffering; durable
+  buffering is Sluice's remit.
+- **No metrics output about itself** at v0.

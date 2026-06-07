@@ -14,50 +14,48 @@ policies later.
 
 ## What it does
 
-Loom gives operators three commands — validate, plan and apply — that map onto
-the three moments of a change: check before commit, review the diff in a pull
-request, and apply atomically on merge. Diffs are deterministic and applies are
-crash-safe and idempotent.
+Loom gives operators three commands — validate, plan and apply — that map onto the
+three moments of a change: check before commit, review the diff in a pull request,
+and apply atomically on merge. Diffs are deterministic and applies are crash-safe
+and idempotent.
 
 ## How it works
 
 ```mermaid
 flowchart LR
- A[edit rules/*.toml] --> V[pre-commit: loom validate]
- V --> P[Pull Request]
- P --> C[CI: loom plan]
- C -->|merge| Y[loom apply, atomic]
- Y --> B[beacon --rules]
+    A[edit rule files] --> V[pre-commit: loom validate]
+    V --> P[Pull Request]
+    P --> C[CI: loom plan]
+    C -->|merge| Y[loom apply, atomic]
+    Y --> B[Beacon picks up the rules]
 ```
 
-- **`loom validate`** walks a directory, runs Beacon's loader, and maps the result
- to exit codes: `0` all good (an empty directory is also `0`, so a fresh team is
- not blocked), `1` a rule rejected, `2` the directory unreadable. Diagnostics go
- to stderr as `file:line: message`.
-- **`loom plan`** computes a per-rule diff in pull-request shape (added, removed,
- changed, plus a summary), with `--diff` for per-field deltas. The output is
- byte-equal across runs — determinism comes from sorting in three places — so two
- reviewers see the same diff and CI never reports phantom drift.
-- **`loom apply`** writes each file to a sibling temp, fsyncs and renames, so a
- crash leaves either the old file or the new one, never a half-written one. It is
- idempotent (a second run writes nothing), it preserves files it did not author,
- and a broken source blocks the whole apply.
-- **`--json` output** carries a `loom.v0` schema tag, so a future `loom.v1` bumps
- the version and consumers reject a mismatch cleanly.
+- **validate** checks a rules directory and reports any problem with the file and
+  line, returning a clear pass or fail for a pre-commit hook. An empty directory
+  passes, so a team not yet writing rules is not blocked.
+- **plan** shows a pull-request-style diff (added, removed, changed) that is
+  byte-identical across runs, so two reviewers see the same thing and CI never
+  reports phantom drift.
+- **apply** writes changes atomically — a crash leaves either the old file or the
+  new one, never a half-written one — is idempotent (a second run changes
+  nothing), and never touches files it did not write. A broken source blocks the
+  whole apply.
+
+Both validate and plan can emit machine-readable output for posting as PR comments
+or to a chat bot, alongside the plain text used by hooks.
 
 ## What works today
 
-The three commands, with text output for pre-commit hooks and JSON for PR
-comments and bots. Plans are byte-equal across runs and applies are idempotent,
-so reviews are stable and re-running `apply` is safe. See [Config as code with
+The three commands, with plain output for hooks and machine-readable output for
+bots and PR comments. Plans are reproducible and applies are idempotent, so
+reviews are stable and re-running an apply is safe. See [Config as code with
 Loom](/operating/config-as-code/).
 
 ## Roadmap and limits
 
-- **Beacon rules only at v0.** Sieve sampling, Prism dashboards and Aegis policies
- are named to follow with the same pattern.
-- **TOML, not yet CUE.** Migration to CUE is a parser swap behind the same
- workflow when the Rust CUE ecosystem matures.
-- **The Git-backed authority** itself is a later deliverable; v0 operates on
- directories on disk.
-
+- **Beacon rules only at v0.** Sampling, dashboards and policies are designed to
+  follow with the same pattern.
+- **TOML, not yet CUE.** Migration to CUE is a swap behind the same workflow when
+  the tooling is ready.
+- **The Git-backed authority** itself is a later deliverable; v0 works on a
+  directory of files.

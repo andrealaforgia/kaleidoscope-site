@@ -4,10 +4,9 @@ description: How Kaleidoscope handles multi-tenancy, where tenant identity comes
 ---
 
 Every signal in Kaleidoscope is scoped to a tenant. This is not an enterprise
-add-on bolted on later; it is threaded through the storage traits from the start.
-A single shared `TenantId` type passes to every store with no conversion, and a
-cross-crate test fails at compile time if that type ever drifts. The platform is
-designed to keep one tenant's data sealed off from another's by construction.
+add-on bolted on later; it is threaded through every store from the start. The
+same tenant identity is used everywhere, so one tenant's data is kept sealed off
+from another's by construction.
 
 ## Where tenant identity comes from
 
@@ -27,9 +26,9 @@ and audit. Its v0 is deliberately minimal but real.
 
 ```mermaid
 flowchart LR
-    R[request + JWT] --> V[aegis::validate]
-    V -- ok --> C[TenantContext<br/>tenant_id + role]
-    V -- err --> E[ValidationError]
+    R[request + token] --> V[Aegis check]
+    V -- ok --> C[verified tenant + role]
+    V -- err --> E[refused, with a reason]
     C --> A1[audit: decision=allow]
     E --> A2[audit: decision=deny]
 ```

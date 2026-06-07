@@ -8,74 +8,64 @@ description: Kaleidoscope's Apache-2.0 Rust SDK — a manual-init wrapper over t
 </p>
 
 Spark is the SDK your applications embed to emit telemetry. It is a thin,
-manual-init wrapper over the upstream OpenTelemetry Rust SDK that injects
-Kaleidoscope's house attributes, lints them at startup, and flushes cleanly on
-shutdown. Because it is an SDK and not a per-host agent, there is no per-host
-fee, ever.
+manual-init wrapper over the upstream OpenTelemetry Rust SDK that adds
+Kaleidoscope's house attributes, checks them at startup, and flushes cleanly on
+shutdown. Because it is an SDK and not a per-host agent, there is no per-host fee,
+ever.
 
 It is licensed Apache-2.0 — unlike the AGPL platform components — precisely so it
 can be embedded in proprietary application code without any copyleft obligation.
 
 ## What it does
 
-On `init`, Spark builds the three OTLP signal pipelines (traces, logs, metrics)
-sharing a single `Resource`, sets the OpenTelemetry global providers, wires a
-logs bridge, and returns a guard. When the guard drops, pending exports are
-flushed synchronously within a bounded deadline. The application keeps using
-ordinary `tracing::info!` calls and the OpenTelemetry tracer and meter as usual.
+You initialise Spark once at the start of your application and hold on to the
+value it returns. From then on you emit telemetry exactly as you would with plain
+OpenTelemetry — ordinary log lines, spans and metrics — and Spark ships it as OTLP
+to the gateway. When your application shuts down, dropping the returned value
+flushes anything still in flight, within a bounded deadline.
 
 ## How it works
 
-The entire public surface is **four items** — `init`, `SparkConfig`,
-`SparkError`, `SparkGuard` — locked by design. Spark deliberately does not
-re-export upstream OpenTelemetry types, so the dependency edge stays visible and
-renaming nothing leaks a breaking change.
+All three signals (traces, logs and metrics) share a single description of your
+service, so a log, a span and a metric from the same process carry the same
+identity. Your existing log lines are bridged into the telemetry pipeline
+automatically, so you do not change how you log.
 
 ```mermaid
 flowchart LR
- App[application] -->|tracing::info!| Bridge[tracing-subscriber bridge]
- Bridge --> LP[OTel LoggerProvider]
- App -->|spans / metrics| TP[Tracer + Meter providers]
- TP --> BP[batch processors]
- LP --> BP
- BP -->|OTLP / gRPC| Endpoint[(Aperture :4317)]
- Guard[SparkGuard drop] -->|bounded force_flush| BP
+    App[your application] -->|logs, spans, metrics| Spark[Spark]
+    Spark -->|OTLP| GW[(Aperture gateway)]
+    Shutdown[app shutdown] -->|flush pending| Spark
 ```
 
-A few decisions worth knowing:
-
-- **Single-init invariant.** A static atomic guards against
- double-initialisation; the flag is released when the guard drops, so
- init → drop → init cycles are allowed. The startup lint runs *before* the flag
- flips, so a configuration error never half-initialises the process.
-- **Logs via the tracing bridge.** The pinned OpenTelemetry SDK has no
- global logger-provider setter, so Spark wires
- `opentelemetry-appender-tracing` as a `tracing-subscriber` layer, filtered to
- exclude Spark's own diagnostics so telemetry never feeds back on itself.
-- **Bounded flush.** Each signal is flushed in turn against a
- remaining-time budget, default five seconds.
-- **Schema lint at init.** Spark calls [Codex](/components/codex/) to
- validate the composed attributes. Default mode warns once; strict mode
- (`with_strict_schema_lint(true)`) returns an error so CI fails fast.
+Two behaviours worth knowing. Spark can only be initialised once per process, and
+it checks your configuration before it takes effect, so a misconfiguration fails
+cleanly at startup rather than half-initialising. And it never lets its own
+internal diagnostics feed back into the telemetry it is exporting.
 
 ## What works today
 
-The `SparkConfig` builder offers `for_service`, `require_tenant_id`,
-`with_tenant_id`, `with_feature_flags`, `with_experiment_id`, `with_endpoint`,
-`with_flush_timeout` and `with_strict_schema_lint`. The only environment variable
-Spark reads is the OpenTelemetry-canonical `OTEL_EXPORTER_OTLP_ENDPOINT`
-(defaulting to `http://localhost:4317`); it introduces no `SPARK_*` variables of
-its own. Transport at v0 is gRPC.
+At initialisation you can set the service name (required), an optional tenant id,
+feature flags, an experiment id, the endpoint, the flush deadline, strict schema
+checking, and a bearer token for an authenticated gateway. Spark reads the
+standard OpenTelemetry environment variables `OTEL_EXPORTER_OTLP_ENDPOINT`
+(default `http://localhost:4317`) and `OTEL_EXPORTER_OTLP_HEADERS`, and adds no
+variables of its own. Transport at v0 is gRPC.
 
-A note on the status label: "v0" here means a shipped, stable, tested public
-surface, not an in-memory store that loses data — Spark holds no state.
+### Authenticating to the gateway
+
+When [Aperture](/components/aperture/) requires ingest authentication, set a
+bearer token in Spark's configuration and it is attached to every export. The
+token is held so that it cannot be printed by accident, and Spark sends it as
+given — it does not pre-check the token, so a rejected token surfaces as an export
+error from the gateway. A token supplied through `OTEL_EXPORTER_OTLP_HEADERS`
+takes precedence. With no token set, Spark sends no authentication header.
 
 ## Roadmap and limits
 
-- **Auto-instrumentation is not in v0.** Spark is manual-init; automatic
- instrumentation is a later version.
-- **Drained / dropped export counts** are not exposed, because the pinned
- OpenTelemetry SDK does not expose them; v0 records the honest literal
- `unknown` rather than building a throwaway counter.
-- **Publication to crates.io** is post-v0; today the crate is in-tree only.
-
+- **Auto-instrumentation is not in v0.** You initialise Spark by hand; automatic
+  instrumentation is a later version.
+- **Some export counters read as `unknown`** because the underlying
+  OpenTelemetry SDK does not expose drained or dropped counts at the pinned
+  version, and Spark reports the honest value rather than inventing one.
+- **Not yet published to a package registry** — the SDK is in-tree for now.

@@ -38,9 +38,9 @@ persist.
 ## Real fsync, and a startup probe
 
 Acknowledged writes are flushed to disk with `fsync`, not merely handed to the
-operating system's page cache: `sync_all` on every log append and on the
-snapshot, plus an `fsync` of the parent directory so the rename of a new snapshot
-is itself durable on POSIX.
+operating system's page cache: every log append and every snapshot is synced, and
+the parent directory is synced too, so a new snapshot's rename is itself durable
+on POSIX.
 
 To guard against a substrate that does not honour `fsync` (some virtualised or
 network disks quietly drop unsynced bytes), the gateway runs a probe at startup:

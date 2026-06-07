@@ -46,22 +46,20 @@ tier, Strata's continuous scraping, and Spark's auto-instrumentation remain
 itself is shipped — see [Honest limitations](/operating/limitations/).
 :::
 
-## The supporting crates
+## The runnable binaries
 
-Beyond the named instruments, the workspace carries the crates that make them
-behave as one platform and that you actually run:
+Beyond the named instruments, these are the programs you actually launch:
 
-| Crate | What it is | Status |
+| Binary | What it is | Status |
 | --- | --- | --- |
-| `integration-suite` | Cross-crate composition tests pinning that the platform behaves as one thing | <span class="k-status k-status--shipped">shipped</span> |
-| `self-observe` | Bridges so Kaleidoscope observes itself via its own primitives | <span class="k-status k-status--shipped">shipped</span> |
-| `aperture-storage-sink` | The storage `OtlpSink` translating OTLP into the durable pillars | <span class="k-status k-status--shipped">shipped</span> |
-| `kaleidoscope-cli` | Operator-facing ingest / read / inspect binary | <span class="k-status k-status--shipped">shipped</span> |
-| `kaleidoscope-gateway` | The runnable OTLP gateway that persists received telemetry | <span class="k-status k-status--shipped">shipped</span> |
-| `query-api` | Prometheus-shaped `/api/v1/query_range` read service over Pulse | <span class="k-status k-status--shipped">shipped</span> |
-| `log-query-api` | Log read service over Lumen | <span class="k-status k-status--shipped">shipped</span> |
-| `trace-query-api` | Trace read service over Ray | <span class="k-status k-status--shipped">shipped</span> |
-| `query-http-common` | Shared read-tier scaffolding (caps, error envelope, tracing) | <span class="k-status k-status--shipped">shipped</span> |
+| `kaleidoscope-gateway` | The OTLP gateway that receives telemetry and persists it into the durable stores | <span class="k-status k-status--shipped">shipped</span> |
+| `kaleidoscope-cli` | The operator tool for ingest, read, inspection and tiering | <span class="k-status k-status--shipped">shipped</span> |
+| `query-api` | The metrics read service (and can serve the Prism frontend) | <span class="k-status k-status--shipped">shipped</span> |
+| `log-query-api` | The log read service | <span class="k-status k-status--shipped">shipped</span> |
+| `trace-query-api` | The trace read service | <span class="k-status k-status--shipped">shipped</span> |
+
+Kaleidoscope also observes itself through its own metrics engine and carries an
+internal test suite that checks the parts compose as one platform.
 
 ## Reading the status honestly
 

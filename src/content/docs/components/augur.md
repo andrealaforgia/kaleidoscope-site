@@ -1,64 +1,54 @@
 ---
 title: Augur
-description: Kaleidoscope's anomaly detection — hand-rolled classical statistics over metric and categorical streams at v0, behind a generic observer trait. No ML stack.
+description: Kaleidoscope's anomaly detection — plain classical statistics over metric and categorical streams at v0. No machine-learning stack.
 ---
 
 <p>
 <span class="k-status k-status--v0">v0</span> &nbsp;·&nbsp; Cross-cutting analysis &nbsp;·&nbsp; AGPL-3.0 &nbsp;·&nbsp; Replaces <strong>Datadog Watchdog, New Relic AI</strong>
 </p>
 
-Augur is anomaly detection, and at v0 it is deliberately boring: classical
-statistics, hand-rolled, no machine-learning stack at all. It watches telemetry
-streams and emits a typed anomaly event when an observation crosses a threshold.
-Included in the free product; bring your own model later if you want a fancier one.
+Augur is anomaly detection, and at v0 it is deliberately boring: plain classical
+statistics, no machine-learning stack at all. It watches telemetry streams and
+flags an anomaly when an observation crosses a threshold. Included in the free
+product; bring your own model later if you want a fancier one.
 
 ## What it does
 
-Augur ships two detectors at v0: a numeric z-score detector over metric streams,
-and a categorical rare-event detector over log bodies and span names. Baselines
-are per-tenant, one observer per signal. It is a library — no daemon, no network,
-no persistence.
+Augur ships two detectors at v0: one for numeric metric streams that flags values
+far from the running normal, and one for categorical streams (log bodies, span
+names) that flags rarely-seen events. Baselines are per tenant, one per signal. It
+is a library — no daemon, no network, no stored state.
 
 ## How it works
 
-Everything sits behind one generic trait, `AnomalyObserver<T>`, with a single
-`observe` method returning an optional `Anomaly<T>`. The same shape is designed to
-carry forward to multivariate, structural and embedding-based detectors later.
-
 ```mermaid
 flowchart LR
- P[Pulse f64 stream] --> Z[ZScoreObserver]
- L[Lumen log body] --> R[RareEventObserver]
- S[Ray span name] --> R
- Z --> A[Anomaly events]
- R --> A
- A -.->|v1| LLM[LLM summariser]
+    M[metric stream] --> Z[numeric detector]
+    L[log bodies] --> R[rare-event detector]
+    S[span names] --> R
+    Z --> A[anomaly flagged]
+    R --> A
+    A -.->|later| LLM[summariser]
 ```
 
-- **Z-score, by Welford (1962).** `ZScoreObserver` keeps an online mean and
- variance; after a warm-up window, an observation whose absolute z-score crosses
- the threshold fires, and a sustained shift adapts the baseline toward the new
- regime.
-- **Rare events by frequency.** `RareEventObserver` keeps a frequency table and
- fires the first time an event's observed fraction falls at or below the rarity
- threshold.
-- **No ML stack, on purpose.** No numpy, no scikit-learn, no embeddings, no LLM
- runtime. Augur depends on the tenant id type and the standard library, full
- stop. The point at v0 is a correct, cheap, explainable baseline behind a trait
- that a heavier detector can replace without changing callers.
+- **The numeric detector** keeps a running mean and spread and flags an
+  observation that sits too many standard deviations away, adapting if the new
+  level holds.
+- **The rare-event detector** keeps how often each value has been seen and flags
+  one the first time it becomes rare enough.
+- **No machine-learning stack, on purpose.** No numpy, no model runtime, no
+  embeddings. The point at v0 is a correct, cheap, explainable baseline that a
+  heavier detector can replace later without changing how it is used.
 
 ## What works today
 
-`ZScoreObserver::new(threshold, min_samples)` and
-`RareEventObserver::new(rarity_threshold, min_samples)`, each emitting an
-`Anomaly { tenant, value, score, observed_at, reason }`. The observe path is
-O(1) per sample, so a detector is cheap to run inline alongside ingest. The value
-carried on an anomaly is the exact value observed, so it lines up bit-for-bit with
-what [Pulse](/components/pulse/) stored.
+The two detectors, each flagging an anomaly with the value, a score and a reason,
+cheap enough to run inline alongside ingest. The value it flags is exactly the
+value observed, so it lines up with what [Pulse](/components/pulse/) stored.
 
 ## Roadmap and limits
 
-- **No ML at v0.** Bayesian online change-point detection, embedding clustering
- and LLM summarisation are named for v1, all behind the same one-method trait.
-- **Stateless across restarts** — Augur holds its baselines in memory.
-
+- **No machine learning at v0.** Change-point detection, clustering and
+  LLM-written summaries are planned for a later version, behind the same simple
+  interface.
+- **State is in memory** — baselines do not survive a restart.

@@ -1,6 +1,6 @@
 ---
 title: Codex
-description: Kaleidoscope's schema authority — lints OpenTelemetry attributes at integration time and suggests corrections for typos, before bad data ships.
+description: Kaleidoscope's schema authority — checks OpenTelemetry attributes at integration time and suggests corrections for typos, before bad data ships.
 ---
 
 <p>
@@ -8,56 +8,49 @@ description: Kaleidoscope's schema authority — lints OpenTelemetry attributes 
 </p>
 
 Codex is the schema authority. It catches attribute typos at integration time,
-before they ship and quietly fragment your data into `service.name` and
-`servce.name`. It is a library, not a service: it holds a pinned corpus of blessed
-attribute names and lints the attributes an application is about to emit.
+before they ship and quietly split your data into `service.name` and
+`servce.name`. It holds a known set of attribute names and checks the attributes
+an application is about to emit against it.
 
 ## What it does
 
-Codex exposes a single behavioural method, `SchemaCatalogue::validate`, which
-checks a set of attribute name/value pairs against the OpenTelemetry semantic
+Codex checks a set of attribute names against the OpenTelemetry semantic
 conventions plus three Kaleidoscope house attributes — `tenant.id`,
 `feature_flag.*` and `experiment.id`. For an unrecognised name it offers a fuzzy
-"did you mean" suggestion. [Spark](/components/spark/) calls it at `init`, after
-composing the resource and before constructing any OpenTelemetry types.
+"did you mean" suggestion. [Spark](/components/spark/) runs this check when your
+application starts, after composing the attributes and before any telemetry is
+emitted.
 
 ## How it works
 
 ```mermaid
 flowchart LR
- Attrs[composed attributes] --> V[SchemaCatalogue.validate]
- V --> Corpus{name blessed?}
- Corpus -->|yes| OK[no violation]
- Corpus -->|no| Lev["Levenshtein <= 2 match?"]
- Lev -->|hit| Suggest["violation + did-you-mean"]
- Lev -->|miss| Unknown[violation: Unknown]
+    Attrs[your attributes] --> V[Codex check]
+    V --> Q{name recognised?}
+    Q -->|yes| OK[no issue]
+    Q -->|no| Near{close to a known name?}
+    Near -->|yes| Suggest[flag it + did-you-mean]
+    Near -->|no| Unknown[flag it as unknown]
 ```
 
-- **The corpus.** A checked-in static slice of the pinned
- semantic-conventions attribute set, plus the three house attributes kept in a
- separate slice so a bad regeneration cannot drop them. An `xtask` regenerates
- the corpus from upstream when the pin moves, producing a visible PR diff.
-- **In-tree Levenshtein.** A small two-row dynamic-programming matrix over
- characters, with the suggestion threshold locked at edit distance 2. No
- dependency is pulled in for it.
-- **Default-warn, opt-in-strict.** The integration behaviour lives in Spark:
- default mode emits one warning per misconfigured init; strict mode returns an
- error so CI fails fast.
-- **Zero runtime dependencies** beyond the standard library. The
- upstream semconv crate is used only by the regenerator, never at runtime.
+The known set is a checked-in copy of the pinned semantic-conventions attributes,
+kept up to date by a tool that regenerates it from upstream when the version moves,
+with the change visible in review. The house attributes are kept separately so a
+bad regeneration cannot drop them. The "did you mean" suggestion is a simple
+edit-distance match. Codex pulls in no runtime dependencies.
+
+By default a problem produces a single warning per application start; in strict
+mode it fails start-up instead, so a misconfiguration is caught in CI.
 
 ## What works today
 
-The five-type public surface is `SchemaCatalogue`, `BlessedAttribute`,
-`LintReport`, `LintViolation` and `ViolationKind`. Blessed attributes come in
-`Exact` and `Prefix` forms (so `feature_flag.checkout_v2` matches the
-`feature_flag.` prefix, but a bare `feature_flag.` does not). "v0" here means a
-shipped, stable library — Codex stores nothing.
+The check runs at application start through Spark, in either warn mode (default)
+or strict mode. House-attribute matching handles both exact names and the
+`feature_flag.` prefix (so `feature_flag.checkout_v2` is recognised, but a bare
+`feature_flag.` is not).
 
 ## Roadmap and limits
 
-- **More match kinds** (regex, glob, version-pattern) and more violation kinds
- (deprecated, misnamed) are reserved by the non-exhaustive enums but not
- implemented.
-- **No per-tenant overlays** and a single pinned semconv version at v0.
-
+- **Richer matching** (patterns and globs) and **more problem kinds** (such as
+  flagging deprecated names) are planned but not implemented.
+- **No per-tenant overrides**, and a single pinned conventions version, at v0.
