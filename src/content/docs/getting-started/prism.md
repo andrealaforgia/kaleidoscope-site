@@ -3,7 +3,7 @@ title: See it in Prism
 description: Prism is Kaleidoscope's query and visualisation frontend. Run it from the same origin as the read API and plot your metrics in the browser.
 ---
 
-Prism is the unified query and visualisation frontend — Kaleidoscope's answer to
+Prism is Kaleidoscope's query and visualisation frontend — its answer to
 Grafana dashboards or the Datadog metrics explorer. At v0 it is a focused
 single-page app: one PromQL query panel against the metrics store, designed for
 an operator triaging an incident.

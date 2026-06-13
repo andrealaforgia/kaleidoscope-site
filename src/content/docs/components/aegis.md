@@ -61,12 +61,14 @@ never logged.
   version.
 - **Authentication, not yet authorization, on ingest.** At v0 any valid token for
   a known tenant may ingest; restricting by role is deferred.
-- **Read-path authentication** (the query APIs) is deferred to a future feature.
+- **Read-path authentication covers all three read APIs.** The metrics, log and
+  trace read APIs can now require a bearer token and scope the query to that
+  token's tenant. Authorization by role is still to come (see below).
 - **The heavier machinery** — workload identity, policy engines, external identity
   providers, secret managers and a database-backed catalogue — is all later.
 
 ## Key points
 
-The query APIs are not yet behind Aegis, and the ingest path checks a token's
-validity but does not yet restrict what a valid token may do. Plan for that when
-weighing it for production.
+The read APIs can now sit behind Aegis, but on every authenticated path a token's
+validity is checked while what a valid token may do is not yet restricted by
+role. Plan for that role-level gap when weighing it for production.

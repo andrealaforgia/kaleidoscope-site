@@ -42,8 +42,9 @@ Kaleidoscope house attributes. It replaces an ad-hoc tags taxonomy.
 It replaces a vendor's RBAC and user management — and unlike them, it is in the
 free product, always.
 
-**Prism** is the unified query and visualisation frontend. It replaces Datadog
-dashboards, New Relic One, or Grafana. No seat licensing.
+**Prism** is the query and visualisation frontend. At v0 it is a single-metric
+PromQL explorer — the beginnings of a Grafana-style explore view, with full
+dashboarding still to come. No seat licensing.
 
 **Beacon** is the alerting and SLO burn-rate engine. It evaluates rules against
 any OTel-compatible backend and routes incidents to standard sinks. It replaces

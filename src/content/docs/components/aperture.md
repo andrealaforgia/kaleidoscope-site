@@ -42,6 +42,12 @@ The decisions that matter to an operator:
   rather than buffering them or dropping them silently. Durable buffering is
   [Sluice's](/components/sluice/) job. The default ceiling is 1024 requests in
   flight per protocol, which you account for when sizing memory.
+- **Oversized payloads are refused, not buffered.** A payload above the
+  receive-size limit is turned away at the boundary — before its body is read into
+  memory — with a clear error (`413` over HTTP, resource-exhausted over gRPC) and
+  a logged event naming the limit and the size seen. A sensible bounded default
+  applies even if you do not set a limit, so one huge payload cannot exhaust
+  memory.
 - **Refuse, don't pretend.** If you enable a security feature Aperture cannot yet
   honour (TLS or SPIFFE), it refuses to start rather than binding in plaintext
   while implying encryption.

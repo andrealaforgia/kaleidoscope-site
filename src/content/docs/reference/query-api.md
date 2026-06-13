@@ -10,13 +10,21 @@ contract.
 
 ## Shared behaviour
 
-**Tenant resolution.** Every endpoint resolves the tenant the same way and fails
-closed. An unresolved tenant is a `401`, never someone else's data.
+**Tenant resolution.** Every endpoint resolves the tenant and fails closed. An
+unresolved tenant is a `401`, never someone else's data.
+
+**Authentication.** When the read service is configured with authentication, a
+request must carry a valid bearer token and the query is scoped to that token's
+tenant; a missing or invalid token is a `401` before the store is touched. When
+authentication is not configured, the service uses a configured tenant and
+ignores any `Authorization` header. This applies to all the read endpoints —
+metrics, logs and traces (including trace lookup by id). If you do configure
+authentication but the config is incomplete or unreadable, the service refuses to
+start rather than run unprotected, the same fail-closed posture as the gateway.
 
 **Safety caps.** Every endpoint enforces a maximum window of **86,400 seconds
-(24h)** and a maximum result of **100,000 rows**, declared as `pub const`.
-Exceeding either is a `400` naming `window` or `result`. See
-[read-side caps](/operating/read-caps/).
+(24h)** and a maximum result of **100,000 rows**. Exceeding either is a `400`
+naming `window` or `result`. See [read-side caps](/operating/read-caps/).
 
 **Error envelope.** Errors return a small JSON object with `error` and `status`
 fields. The body never echoes raw input values or forwarded headers.

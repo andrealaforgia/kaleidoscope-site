@@ -31,7 +31,7 @@ conceptual tour see [The fifteen instruments](/concepts/instruments/).
 | [**Ray**](/components/ray/) | Distributed trace storage and query | Datadog APM, NR Tracing, Tempo | <span class="k-status k-status--v1">v1</span> |
 | [**Strata**](/components/strata/) | Passive profile storage | Datadog Profiler, NR code-level metrics | <span class="k-status k-status--v1">v1</span> |
 | [**Cinder**](/components/cinder/) | Local tier-metadata governor | Datadog Flex Logs, S3 Archives | <span class="k-status k-status--v1">v1</span> |
-| [**Prism**](/components/prism/) | Unified query and visualisation frontend | Datadog dashboards, NR One, Grafana | <span class="k-status k-status--v0">v0</span> |
+| [**Prism**](/components/prism/) | Single-metric PromQL explorer (full dashboards: future) | Grafana (single-panel explore) | <span class="k-status k-status--v0">v0</span> |
 | [**Beacon**](/components/beacon/) | Alerting + SLO burn-rate engine | Datadog Monitors, NR Alerts, PagerDuty | <span class="k-status k-status--v1">v1</span> |
 | [**Augur**](/components/augur/) | Anomaly detection / AIops | Datadog Watchdog, NR AI | <span class="k-status k-status--v0">v0</span> |
 | [**Aegis**](/components/aegis/) | AuthN/Z, multi-tenancy, audit | Datadog RBAC, NR user management | <span class="k-status k-status--v0">v0</span> |

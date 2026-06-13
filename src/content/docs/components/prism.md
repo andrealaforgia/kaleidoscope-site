@@ -1,6 +1,6 @@
 ---
 title: Prism
-description: Kaleidoscope's unified query and visualisation frontend — a focused, calm metrics panel built around the operator paged at 03:14.
+description: Kaleidoscope's query and visualisation frontend — a focused, calm metrics panel built around the operator paged at 03:14.
 ---
 
 <p>
