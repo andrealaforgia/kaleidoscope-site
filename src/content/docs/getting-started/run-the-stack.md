@@ -57,15 +57,32 @@ flowchart LR
 
 ## Send some telemetry
 
-Point any OpenTelemetry SDK, or the OpenTelemetry Collector's OTLP exporter, at
-`localhost:4317` (gRPC) or `localhost:4318` (HTTP) and emit as usual. The local
-stack runs single-tenant with authentication off, so no bearer token is needed
-here.
+The simplest path is the bundled sample generator:
+
+```sh
+make demo    # push a sample of each signal now
+make seed    # push it once (a no-op if already seeded)
+```
+
+Both push one of each signal for tenant `acme` — a `request_count` metric, a
+`checkout failed: card declined` log, and a `GET /api/v1/query_range` span under
+a fixed trace id — against the running stack. The generator runs a reachability
+check first, so if the stack is not up it names the unreachable endpoint, exits
+non-zero, and sends nothing rather than firing into the void.
+
+To send your own instead, point any OpenTelemetry SDK or the Collector's OTLP
+exporter at `localhost:4317` (gRPC) or `localhost:4318` (HTTP) and emit as usual.
+The local stack is single-tenant with authentication off, so no bearer token is
+needed; just make sure your telemetry uses the same tenant (`acme` by default)
+so it is visible. The repository's `examples/otel-external-demo` is a small
+Python app that uses only the official OpenTelemetry SDK — no Kaleidoscope
+dependency — and is the clearest proof that any standard OTLP source works.
 
 ## See it
 
-Open `http://localhost:9090` for Prism, or query the APIs directly — see [Query
-your telemetry](/getting-started/querying/).
+Open `http://localhost:9090` for Prism and query `request_count` to see the
+sample metric plotted. Logs and traces come back as JSON from the query APIs —
+see [Query your telemetry](/getting-started/querying/).
 
 ## Manage it
 
@@ -75,14 +92,10 @@ make down    # stop the stack, keep your data (the volume is preserved)
 make clean   # stop the stack and wipe the data volume (fresh start)
 ```
 
-## What is not there yet
+## Keep it honest
 
-The `make demo` and `make seed` targets, meant to push sample telemetry for you,
-are wired up but depend on a sample-telemetry generator that has not yet landed,
-so they fail with a build error until it does. For now, bring your own telemetry
-with an SDK or the Collector as above.
-
-And to say it again plainly: this is a local experiment posture — one tenant, no
-authentication, no TLS. For the authenticated, multi-signal setup, see [Run the
-gateway end to end](/getting-started/gateway/), and for the honest state of
-everything, [Is it ready for you?](/start/status/).
+To say it plainly: this is a local experiment posture — one tenant, no
+authentication, no TLS. It is not a production deployment. For the authenticated,
+multi-signal setup, see [Run the gateway end to end](/getting-started/gateway/),
+and for the honest state of everything, [Is it ready for
+you?](/start/status/).

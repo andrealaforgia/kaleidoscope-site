@@ -32,6 +32,14 @@ fields. The body never echoes raw input values or forwarded headers.
 **Empty is not an error.** An empty window or a no-match query returns a calm
 `200` with an empty result, not an error — finding nothing is an ordinary answer.
 
+**Time bounds.** `start` and `end` accept either RFC3339 timestamps or Unix
+seconds. A malformed bound is a `400` that names both accepted formats and does
+not echo the raw value.
+
+**Usage help.** `GET /help` on the metrics origin (`:9090`) returns a plain-text
+usage summary with example `curl` commands and the accepted time formats. The
+Prism SPA is still served at `/`.
+
 ## Metrics — `GET /api/v1/query_range`
 
 Reads from the durable Pulse store, answers in the Prometheus matrix shape.
@@ -72,6 +80,10 @@ time.
 
 `body_contains` and `body_regex` are mutually exclusive; supplying both is a
 `400`. An empty value for any string filter is a `400`, not a silent "no filter".
+
+A log record carries its `trace_id` and `span_id` as lowercase hex, the same form
+the trace API uses, so you can take the `trace_id` from a log and look the trace
+up directly with `/api/v1/traces/by_id`.
 
 ## Traces — `GET /api/v1/traces`
 
