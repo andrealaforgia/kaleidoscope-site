@@ -60,6 +60,7 @@ export default defineConfig({
         {
           label: 'Getting started',
           items: [
+            { label: 'Run the whole stack', slug: 'getting-started/run-the-stack' },
             { label: 'Quick start (CLI)', slug: 'getting-started/quick-start' },
             { label: 'Run with Docker', slug: 'getting-started/docker' },
             { label: 'Run the gateway end to end', slug: 'getting-started/gateway' },

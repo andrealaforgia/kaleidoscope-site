@@ -42,6 +42,10 @@ The platform runs end to end:
   no CORS).
 - Log and trace read endpoints (`/api/v1/logs`, `/api/v1/traces`,
   `/api/v1/traces/by_id`) close the read loop for all three classical signals.
+- A **consolidated runtime** now runs ingest, all three queries, and Prism in a
+  single process sharing one set of stores, so a metric you send is queryable
+  immediately with no restart. A one-command local stack (`make up`) brings the
+  whole thing up — see [Run the whole stack](/getting-started/run-the-stack/).
 
 So the loop is complete: **ingest, store, query, see.**
 
