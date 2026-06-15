@@ -73,7 +73,7 @@ time.
 | Parameter | Meaning |
 | --- | --- |
 | `start`, `end` | Window bounds for a time-range query, validated before the store is touched |
-| `trace_id` | Fetch the logs correlated to one trace (32 hex chars); an invalid id is a `400` naming the format |
+| `trace_id` | Fetch the logs correlated to one trace (32 hex chars), across all time; an invalid id is a `400` naming the format |
 | `min_severity` | One of the six OTel severity names; returns that severity or worse |
 | `body_contains` | Case-sensitive substring match on the record body (≤ 1024 bytes) |
 | `body_regex` | Regex match on the body; use `(?i)` to fold case (≤ 1024 bytes) |
@@ -85,7 +85,10 @@ time.
 A log record carries its `trace_id` and `span_id` as lowercase hex, the same form
 the trace API uses. So correlation works both ways: take a log's `trace_id` and
 look the trace up with `/api/v1/traces/by_id`, or pass `trace_id` here to pull
-that trace's logs in one query. An unknown id is a calm `200 []`.
+that trace's logs in one query. A `trace_id` query needs no time window — it spans
+all time — though a window is still applied if you give one. A request must carry
+either a window or a `trace_id`; with neither, it is a `400`. An unknown id is a
+calm `200 []`.
 
 ## Traces — `GET /api/v1/traces`
 
