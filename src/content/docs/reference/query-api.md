@@ -72,7 +72,8 @@ time.
 
 | Parameter | Meaning |
 | --- | --- |
-| `start`, `end` | Window bounds (required, validated before the store is touched) |
+| `start`, `end` | Window bounds for a time-range query, validated before the store is touched |
+| `trace_id` | Fetch the logs correlated to one trace (32 hex chars); an invalid id is a `400` naming the format |
 | `min_severity` | One of the six OTel severity names; returns that severity or worse |
 | `body_contains` | Case-sensitive substring match on the record body (≤ 1024 bytes) |
 | `body_regex` | Regex match on the body; use `(?i)` to fold case (≤ 1024 bytes) |
@@ -82,8 +83,9 @@ time.
 `400`. An empty value for any string filter is a `400`, not a silent "no filter".
 
 A log record carries its `trace_id` and `span_id` as lowercase hex, the same form
-the trace API uses, so you can take the `trace_id` from a log and look the trace
-up directly with `/api/v1/traces/by_id`.
+the trace API uses. So correlation works both ways: take a log's `trace_id` and
+look the trace up with `/api/v1/traces/by_id`, or pass `trace_id` here to pull
+that trace's logs in one query. An unknown id is a calm `200 []`.
 
 ## Traces — `GET /api/v1/traces`
 
