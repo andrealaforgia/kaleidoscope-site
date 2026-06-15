@@ -117,6 +117,39 @@ job was to remove overstatement from the project's own prose. See
 [Durability and Earned Trust](/operating/durability/) and
 [Read-side safety caps](/operating/read-caps/).
 
+## Locking the doors
+
+[Aegis](/components/aegis/) had existed for a while — it could turn a token into a
+verified tenant — but nothing called it, so the gateway accepted telemetry from
+anyone and trusted whatever tenant the caller asserted. That changed in stages.
+First, ingest: the gateway now authenticates every OTLP request against an Aegis
+token before the body reaches storage, fail-closed, with the verified tenant
+riding through the pipeline, and refuses to start without a complete auth
+configuration. Then the read side, one tier at a time, until all three query
+APIs — metrics, then logs and traces — required the same token and scoped the
+answer to it. The honest edge, recorded plainly: this is authentication, not yet
+authorization, so a valid token is not yet restricted by role. See [Tenancy and
+identity](/concepts/tenancy/).
+
+## The parts become a system
+
+Nineteen good components are not a system. The stores were durable, ingest worked,
+the three query services answered, but they did not share a present: ingest ran in
+one process and query in another, and each read its file into memory once at
+start-up. You could send a metric and not see it until you restarted the reader.
+The fix was not a feature but a shared handle — one process that builds each store
+once and hands the same live handle to both the writer and the reader, so what you
+send is queryable immediately, with the same fail-closed startup discipline as the
+rest of the platform.
+
+On top of that came the thing that makes it approachable: a one-command local
+stack. `make up` brings up the consolidated runtime — ingest, all three queries,
+and Prism on one origin — and a small generator pushes a sample of each signal so
+you can send and see in a minute. An example app using only the official
+OpenTelemetry SDK proves any standard source works, and logs now carry trace ids
+in the same form as traces, so you can pivot from a log to its trace and back. See
+[Run the whole stack](/getting-started/run-the-stack/).
+
 ## What stayed consistent throughout
 
 Small commits. Trunk-based development. CI as feedback, not as a blocker.
