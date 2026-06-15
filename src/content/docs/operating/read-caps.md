@@ -10,12 +10,11 @@ is worth knowing why they are shaped the way they are.
 
 ## The two read caps
 
-Every read endpoint — metrics, logs, traces — enforces two limits, declared as
-`pub const` in each crate so they are part of the read contract, not buried in
-config:
+Every read endpoint — metrics, logs, traces — enforces two limits. They are fixed
+parts of the read contract, not tucked away in configuration:
 
-- **Maximum window: 24 hours** (`MAX_WINDOW_SECONDS = 86_400`).
-- **Maximum result: 100,000 rows** (`MAX_RESULT_ROWS = 100_000`).
+- **Maximum window: 24 hours.**
+- **Maximum result: 100,000 rows.**
 
 The window check runs after parsing and before the store is touched; the result
 check runs after the store and before serialisation.
@@ -63,8 +62,9 @@ could fill the index until it ran out of memory.
 So each tenant gets a soft watermark of **10,000 series**. Above the cap, a new
 label set is refused at ingest and counted; existing series keep receiving
 points. Because the count is per-tenant, a noisy neighbour cannot starve a quiet
-one. The refusal is visible both to the caller (a `series_refused` field on the
-ingest receipt) and to the platform (a `pulse.series.refused.count` metric).
+one. The refusal is visible both to the caller (the ingest response reports how
+many series were refused) and to the platform (a `pulse.series.refused.count`
+metric).
 
 ```mermaid
 flowchart LR
