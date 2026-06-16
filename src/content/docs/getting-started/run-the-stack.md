@@ -65,11 +65,13 @@ flowchart LR
 
 You do not have to seed anything to see Kaleidoscope working. After `make up`,
 the stack already answers with an always-current demo for tenant `acme`, service
-`kaleidoscope-demo` — a `request_count` metric, a `checkout failed: card
-declined` log, and a failed `POST /api/v1/checkout` trace whose cause log rides
-inside it. It is shaped to tell a small triage story: the checkout span is marked
-**failed** (an error status carrying that readable message, so a trace-by-id
-query shows *where* it failed), and the cause log shows *why*.
+`kaleidoscope-demo` — a `request_count` metric, a realistic spread of about a
+dozen logs across a handful of customers, and several traces. It is shaped to
+tell a small triage story: most of it is healthy noise, with exactly one failed
+`POST /api/v1/checkout` trace and its single `checkout failed: card declined`
+error log, so searching for the failure is a real search and not a trick. The
+failed span is marked with an error status (so a trace-by-id query shows *where*
+it failed), and its cause log shows *why*.
 
 This demo is synthesised at read time, not stored: its timestamps are always
 relative to now, so the first look is never empty and never stale, and because it

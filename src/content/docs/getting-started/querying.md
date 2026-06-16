@@ -92,6 +92,15 @@ span. It is the fast path from "show me everything" to "show me what broke":
 curl 'http://localhost:9092/api/v1/traces?service=kaleidoscope-demo&start=...&end=...&error=true'
 ```
 
+To find one identifier among many, pass `attr_key` and `attr_value` together —
+they keep the traces with a span carrying that exact attribute, so a dotted key
+like `customer.id` pulls out one customer's traces. Supply only one of the pair
+and it is a `400`:
+
+```sh
+curl 'http://localhost:9092/api/v1/traces?service=kaleidoscope-demo&start=...&end=...&attr_key=customer.id&attr_value=alice'
+```
+
 When you already have the id — from an alert, a log line, or a customer reading
 numbers off a screen — look it up directly:
 

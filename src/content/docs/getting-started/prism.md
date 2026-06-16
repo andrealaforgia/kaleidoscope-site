@@ -5,10 +5,11 @@ description: Prism is Kaleidoscope's query and visualisation frontend. Run it fr
 
 Prism is Kaleidoscope's query and visualisation frontend — its answer to
 Grafana dashboards or the Datadog metrics explorer. At v0 it is a focused
-single-page app with two views, switched from an accessible nav: a metrics query
-panel at `/`, and a trace explorer at `/traces` that finds failed traces and
-shows their spans and correlated logs on one screen. Both are built for the same
-job — an operator triaging an incident.
+single-page app with three views, switched from an accessible nav: a metrics
+query panel at `/`, a trace explorer at `/traces` that finds failed traces and
+shows their spans and correlated logs on one screen, and a logs search at
+`/logs` that finds a symptom and pivots to its trace. All three are built for the
+same job — an operator triaging an incident.
 
 ## The persona it was built for
 
@@ -77,10 +78,19 @@ It carries the same calm posture as the metrics panel: every outcome, including
 each failure, has its own surface, and the interactive elements went through the
 same accessibility care.
 
+## The logs search
+
+The third view, at `/logs`, starts from a symptom. You give it a time window and
+one search mode — either a substring to match in the log body, or a minimum
+severity floor, never both — and it returns the matching logs with their severity
+and body. A log that carries a trace id is pivotable: following it deep-links to
+`/traces` with that trace already open, so you land on the spans and correlated
+logs without copying an id by hand. A log with no trace id is an honest dead end,
+not a broken link. It is the symptom-to-cause path, made a click.
+
 ## What it is not yet
 
-Prism v0 is two focused panels, not a dashboard builder. Metric charting and the
-trace explorer are separate views: click-through from a metric chart point to a
-trace exemplar, log tailing alongside a metric, and saved named dashboards are
-all still deferred to later features. See the [roadmap](/reference/roadmap/) for
-the sequencing.
+Prism v0 is three focused views, not a dashboard builder, and they do not yet
+compose: click-through from a metric chart point to a trace exemplar, log tailing
+alongside a metric chart, and saved named dashboards are all still deferred to
+later features. See the [roadmap](/reference/roadmap/) for the sequencing.

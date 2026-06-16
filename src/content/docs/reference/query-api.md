@@ -99,6 +99,7 @@ Reads from the durable Ray store, returns a JSON array of spans.
 | `service` | **Required.** Ray's store is keyed by service; missing or empty is a `400` |
 | `start`, `end` | Window bounds |
 | `error` | `true` returns only traces with at least one error-status span (and returns *all* of that trace's spans, not just the failing one); `false` or absent returns every trace. Case-insensitive; any other value is a `400` that does not echo the raw input |
+| `attr_key`, `attr_value` | Narrow to traces with at least one span carrying that span attribute, matched exactly (a dotted key like `customer.id` is kept verbatim); all of a matching trace's spans are returned. Both-or-neither: supplying only one is a `400` that does not echo the raw input |
 
 ## Trace by id — `GET /api/v1/traces/by_id`
 

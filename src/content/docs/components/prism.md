@@ -54,20 +54,22 @@ the chart for assistive technology.
 
 ## What works today
 
-Two views, switched from an accessible nav. The metrics panel: relative presets
+Three views, switched from an accessible nav. The metrics panel: relative presets
 (5 min, 15 min, 1 h, 6 h, 24 h) and a custom absolute range, steady auto-refresh,
-a small fast bundle. And a trace explorer that finds failed traces for a service
-and window — an *errors only* toggle, failed traces badged — and shows a selected
+a small fast bundle. A trace explorer that finds failed traces for a service and
+window — an *errors only* toggle, failed traces badged — and shows a selected
 trace's spans together with its correlated logs on one screen, the visual form of
-the trace-to-cause pivot. Prism is served by the read API from the same origin —
-point `KALEIDOSCOPE_QUERY_STATIC_DIR` at the built bundle and there is no separate
-web server and no CORS. See [See it in Prism](/getting-started/prism/).
+the trace-to-cause pivot. And a logs search that finds a symptom by body
+substring or minimum severity and pivots from a log to its trace in one click.
+Prism is served by the read API from the same origin — point
+`KALEIDOSCOPE_QUERY_STATIC_DIR` at the built bundle and there is no separate web
+server and no CORS. See [See it in Prism](/getting-started/prism/).
 
 ## Roadmap and limits
 
-Prism v0 is two focused panels, not a dashboard builder. The metrics chart and
-the trace explorer are still separate views. Deferred, each gated on another
-component: a logs panel and metric-to-log linking ([Lumen](/components/lumen/)),
-click-through from a metric chart to a trace exemplar
-([Ray](/components/ray/), [Strata](/components/strata/)), saved named dashboards
-([Loom](/components/loom/)), and native authentication ([Aegis](/components/aegis/)).
+Prism v0 is three focused views, not a dashboard builder, and they do not yet
+compose. Deferred, each gated on another component: log tailing alongside a
+metric chart ([Lumen](/components/lumen/)), click-through from a metric chart to a
+trace exemplar ([Ray](/components/ray/), [Strata](/components/strata/)), saved
+named dashboards ([Loom](/components/loom/)), and native authentication
+([Aegis](/components/aegis/)).
