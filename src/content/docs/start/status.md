@@ -41,11 +41,19 @@ The platform runs end to end:
   serve the Prism frontend bundle from the same origin (no separate web server,
   no CORS).
 - Log and trace read endpoints (`/api/v1/logs`, `/api/v1/traces`,
-  `/api/v1/traces/by_id`) close the read loop for all three classical signals.
+  `/api/v1/traces/by_id`) close the read loop for all three classical signals,
+  with a combined `/api/v1/traces/with_logs` that returns a trace and its
+  correlated logs in one call, plus filters to find failed traces or one
+  identifier among many.
 - A **consolidated runtime** now runs ingest, all three queries, and Prism in a
   single process sharing one set of stores, so a metric you send is queryable
   immediately with no restart. A one-command local stack (`make up`) brings the
   whole thing up — see [Run the whole stack](/getting-started/run-the-stack/).
+- **Prism** has grown from a single metrics panel into three triage views —
+  metrics, a trace explorer (find a failure, see its spans and cause log on one
+  screen), and a logs search that pivots from a symptom to its trace. The stack
+  also serves an **always-current demo** so the first look is never empty, with
+  no seeding and no risk to real data.
 
 So the loop is complete: **ingest, store, query, see.**
 
