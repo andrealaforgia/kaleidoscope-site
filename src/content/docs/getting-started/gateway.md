@@ -53,11 +53,11 @@ trust, never split the difference silently.
 
 ## Authentication is mandatory
 
-As of `aegis-ingest-auth-v0`, the gateway authenticates **every** OTLP ingest
-request against an Aegis HS256 JWT validator before the body reaches any sink,
-fail-closed end to end. There is no off switch: a gateway with a missing,
-incomplete or unreadable auth block **refuses to start** (exit code `2`, event
-`config_validation_failed`, naming the offending field) and binds nothing.
+The gateway authenticates **every** OTLP ingest request against an HS256 JWT
+validator before the body reaches any sink, fail-closed end to end. There is no
+off switch: a gateway with a missing, incomplete or unreadable auth block
+**refuses to start** (exit code `2`, naming the offending field) and binds
+nothing.
 
 Configure it with a complete `[aperture.security.auth.jwt]` block:
 
@@ -68,6 +68,9 @@ audience = "kaleidoscope-ingest"
 secret_file = "/path/to/hs256.secret"     # the HS256 signing key, read once at startup, never logged
 catalogue_path = "/path/to/tenants.toml"  # the Aegis tenant catalogue
 ```
+
+The full set of keys, and every other setting the gateway and query services
+read, is in the [configuration reference](/reference/configuration/).
 
 Clients then present a bearer JWT — as the `Authorization: Bearer <jwt>` header
 over HTTP, or `authorization` metadata over gRPC. The token is HS256-signed with
@@ -96,21 +99,22 @@ trace API (next section).
 
 ## Read it back
 
-The read side is served by the `query-api` binary and its siblings. Metrics come
-back in Prometheus shape; logs and traces as JSON arrays.
+The read side is served by the `query-api` binary and its siblings, each
+listening on its own port — metrics on `:9090`, logs on `:9091`, traces on
+`:9092`. Metrics come back in Prometheus shape; logs and traces as JSON arrays.
 
 ```sh
 # metrics (Prometheus-shaped matrix)
 curl 'http://localhost:9090/api/v1/query_range?query=http_requests_total&start=...&end=...&step=15'
 
-# logs for a tenant and window
-curl 'http://localhost:9090/api/v1/logs?start=...&end=...'
+# logs for a tenant and window (logs service)
+curl 'http://localhost:9091/api/v1/logs?start=...&end=...'
 
-# spans for a tenant, service and window
-curl 'http://localhost:9090/api/v1/traces?service=checkout&start=...&end=...'
+# spans for a tenant, service and window (traces service)
+curl 'http://localhost:9092/api/v1/traces?service=checkout&start=...&end=...'
 
-# a single trace by id
-curl 'http://localhost:9090/api/v1/traces/by_id?trace_id=<32-hex>'
+# a single trace by id (traces service)
+curl 'http://localhost:9092/api/v1/traces/by_id?trace_id=<32-hex>'
 ```
 
 Tenancy is resolved the same way on the read side; an unresolved tenant is

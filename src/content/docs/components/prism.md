@@ -54,16 +54,20 @@ the chart for assistive technology.
 
 ## What works today
 
-Relative presets (5 min, 15 min, 1 h, 6 h, 24 h) and a custom absolute range;
-steady auto-refresh; a small, fast bundle. Prism is served by the read API from
-the same origin — point `KALEIDOSCOPE_QUERY_STATIC_DIR` at the built bundle and
-there is no separate web server and no CORS. See [See it in
-Prism](/getting-started/prism/).
+Two views, switched from an accessible nav. The metrics panel: relative presets
+(5 min, 15 min, 1 h, 6 h, 24 h) and a custom absolute range, steady auto-refresh,
+a small fast bundle. And a trace explorer that finds failed traces for a service
+and window — an *errors only* toggle, failed traces badged — and shows a selected
+trace's spans together with its correlated logs on one screen, the visual form of
+the trace-to-cause pivot. Prism is served by the read API from the same origin —
+point `KALEIDOSCOPE_QUERY_STATIC_DIR` at the built bundle and there is no separate
+web server and no CORS. See [See it in Prism](/getting-started/prism/).
 
 ## Roadmap and limits
 
-Prism v0 is one metrics panel, not a dashboard builder. Deferred, each gated on
-another component: a logs panel ([Lumen](/components/lumen/)), a traces panel and
-click-through to exemplars ([Ray](/components/ray/), [Strata](/components/strata/)),
-saved named dashboards ([Loom](/components/loom/)), and native authentication
-([Aegis](/components/aegis/)).
+Prism v0 is two focused panels, not a dashboard builder. The metrics chart and
+the trace explorer are still separate views. Deferred, each gated on another
+component: a logs panel and metric-to-log linking ([Lumen](/components/lumen/)),
+click-through from a metric chart to a trace exemplar
+([Ray](/components/ray/), [Strata](/components/strata/)), saved named dashboards
+([Loom](/components/loom/)), and native authentication ([Aegis](/components/aegis/)).

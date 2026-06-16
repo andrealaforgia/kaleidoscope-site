@@ -52,6 +52,7 @@ Beyond the named instruments, these are the programs you actually launch:
 
 | Binary | What it is | Status |
 | --- | --- | --- |
+| `kaleidoscope-runtime` | The consolidated single-process runtime — ingest, all three query services and Prism over one shared store. This is what [`make up`](/getting-started/run-the-stack/) starts | <span class="k-status k-status--shipped">shipped</span> |
 | `kaleidoscope-gateway` | The OTLP gateway that receives telemetry and persists it into the durable stores | <span class="k-status k-status--shipped">shipped</span> |
 | `kaleidoscope-cli` | The operator tool for ingest, read, inspection and tiering | <span class="k-status k-status--shipped">shipped</span> |
 | `query-api` | The metrics read service (and can serve the Prism frontend) | <span class="k-status k-status--shipped">shipped</span> |

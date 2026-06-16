@@ -42,6 +42,12 @@ serves:
 - Query APIs — metrics on `:9090`, logs on `:9091`, traces on `:9092`
 - Prism — served same-origin on `:9090` (no separate web server, no CORS)
 
+The trace query routes (`/api/v1/traces`, `/api/v1/traces/by_id`,
+`/api/v1/traces/with_logs`) are also served on the `:9090` origin alongside
+metrics and Prism, over the same data and with no CORS, so a same-origin frontend
+can read metrics and traces from one place. Logs stay on `:9091`. The standalone
+`:9092` traces endpoint is unchanged, so direct API clients can use either.
+
 Because ingest and query share the same process and the same stores, a metric you
 send is immediately queryable — there is no restart step between writing and
 reading.
@@ -64,11 +70,17 @@ make demo    # push a sample of each signal now
 make seed    # push it once (a no-op if already seeded)
 ```
 
-Both push one of each signal for tenant `acme` — a `request_count` metric, a
-`checkout failed: card declined` log, and a `GET /api/v1/query_range` span under
-a fixed trace id — against the running stack. The generator runs a reachability
-check first, so if the stack is not up it names the unreachable endpoint, exits
-non-zero, and sends nothing rather than firing into the void.
+Both push a sample for tenant `acme` — a `request_count` metric, a
+`checkout failed: card declined` log, and several traces: one failed
+`POST /api/v1/checkout` plus a few healthy ones, all under fixed trace ids. The
+sample is shaped to tell a small triage story: the checkout span is marked
+**failed** (an error status carrying that readable message, so a trace-by-id
+query shows *where* it failed), and the cause log is emitted inside that same
+trace, so pulling the trace's logs returns *why* it failed. The healthy traces
+are there so an `error=true` listing has something to sift out — it is a worked
+example of pivoting from a failing trace to its cause. The generator runs a
+reachability check first, so if the stack is not up it names the unreachable
+endpoint, exits non-zero, and sends nothing rather than firing into the void.
 
 To send your own instead, point any OpenTelemetry SDK or the Collector's OTLP
 exporter at `localhost:4317` (gRPC) or `localhost:4318` (HTTP) and emit as usual.
@@ -92,10 +104,16 @@ make down    # stop the stack, keep your data (the volume is preserved)
 make clean   # stop the stack and wipe the data volume (fresh start)
 ```
 
+The runtime container restarts itself after a crash, an unexpected exit, or a
+Docker or host restart, so it stays reachable without you intervening. A
+deliberate `make down` is honoured — once you stop it on purpose it stays down
+until you bring it back up.
+
 ## Keep it honest
 
 To say it plainly: this is a local experiment posture — one tenant, no
 authentication, no TLS. It is not a production deployment. For the authenticated,
 multi-signal setup, see [Run the gateway end to end](/getting-started/gateway/),
-and for the honest state of everything, [Is it ready for
-you?](/start/status/).
+for every setting you can change see the [configuration
+reference](/reference/configuration/), and for the honest state of everything,
+[Is it ready for you?](/start/status/).

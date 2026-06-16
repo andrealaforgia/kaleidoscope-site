@@ -131,6 +131,7 @@ export default defineConfig({
             { label: 'Component status', slug: 'reference/components' },
             { label: 'CLI reference', slug: 'reference/cli' },
             { label: 'Query API reference', slug: 'reference/query-api' },
+            { label: 'Configuration reference', slug: 'reference/configuration' },
             { label: 'Roadmap and phasing', slug: 'reference/roadmap' },
           ],
         },

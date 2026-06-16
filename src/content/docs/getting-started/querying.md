@@ -56,10 +56,11 @@ honoured: you get the raw in-window points, not a re-stepped grid.
 ## Logs: window, severity and body search
 
 `GET /api/v1/logs` returns the records for a tenant inside a time window as a
-JSON array, ascending in time:
+JSON array, ascending in time. In the consolidated stack the logs service
+listens on `:9091`:
 
 ```sh
-curl 'http://localhost:9090/api/v1/logs?start=...&end=...'
+curl 'http://localhost:9091/api/v1/logs?start=...&end=...'
 ```
 
 You can narrow the result before it is capped:
@@ -68,6 +69,8 @@ You can narrow the result before it is capped:
 - `body_contains=kafka%20timeout` — case-sensitive substring match on the body.
 - `body_regex=kafka.*(timeout|timed%20out)` — regex match; use `(?i)` to fold
   case.
+- `trace_id=<32-hex>` — fetch the logs correlated to one trace, across all time;
+  this selector needs no window. See the pivot below.
 - `limit` and `offset` — paginate within the window.
 
 An empty window is a calm `[]` at `200`, not an error — finding nothing is an
@@ -76,19 +79,55 @@ before the store is even touched.
 
 ## Traces: by service-and-window, or by id
 
+In the consolidated stack the traces service listens on `:9092`.
 `GET /api/v1/traces?service=checkout&start=...&end=...` returns the in-window
 spans for a tenant and a service. `service` is required, because Ray's store is
 keyed by it; a missing or empty `service` earns a clean `400`.
+
+Add `error=true` to narrow the result to only the traces that contain at least
+one failing span — and you get the *whole* failing trace, not just its error
+span. It is the fast path from "show me everything" to "show me what broke":
+
+```sh
+curl 'http://localhost:9092/api/v1/traces?service=kaleidoscope-demo&start=...&end=...&error=true'
+```
 
 When you already have the id — from an alert, a log line, or a customer reading
 numbers off a screen — look it up directly:
 
 ```sh
-curl 'http://localhost:9090/api/v1/traces/by_id?trace_id=4bf92f3577b34da6a3ce929d0e0e4736'
+curl 'http://localhost:9092/api/v1/traces/by_id?trace_id=4bf92f3577b34da6a3ce929d0e0e4736'
 ```
 
 The id is 32 hex characters, case-insensitive, W3C/OTel shape. An unknown id is
 a calm `200 []`, never a `404`.
+
+## Trace and its logs, in one call
+
+`GET /api/v1/traces/with_logs?trace_id=<32-hex>` returns one object —
+`{trace_id, spans, logs}` — carrying the trace's spans (status included) and
+every log correlated to that trace, so "a trace and its logs" is one request
+instead of two and a client-side stitch. Like the by-id lookup it is keyed on
+the trace alone, so it needs no time window. An unknown id is a calm `200` with
+empty `spans` and `logs`.
+
+## Follow a failure from trace to cause
+
+The bundled [`make demo`](/getting-started/run-the-stack/) data is shaped to
+walk this path. The seed emits several healthy traces alongside one failed
+checkout, so `error=true` on the demo service has something real to sift —
+listing the service returns them all, adding `error=true` leaves just the failed
+checkout. The failed span is marked with an error status, and its cause log rides
+inside the same trace, so one call then shows both *where* and *why*:
+
+```sh
+curl 'http://localhost:9092/api/v1/traces/with_logs?trace_id=4bf92f3577b34da6a3ce929d0e0e4736'
+```
+
+The span comes back with an error status reading `checkout failed: card
+declined` (the *where*), alongside the matching log record (the *why*). To do it
+in two steps instead, look the trace up with `/api/v1/traces/by_id` on `:9092`,
+then pass the same id to `/api/v1/logs?trace_id=…` on `:9091`.
 
 ## Safety caps you will hit on purpose
 

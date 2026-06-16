@@ -98,6 +98,7 @@ Reads from the durable Ray store, returns a JSON array of spans.
 | --- | --- |
 | `service` | **Required.** Ray's store is keyed by service; missing or empty is a `400` |
 | `start`, `end` | Window bounds |
+| `error` | `true` returns only traces with at least one error-status span (and returns *all* of that trace's spans, not just the failing one); `false` or absent returns every trace. Case-insensitive; any other value is a `400` that does not echo the raw input |
 
 ## Trace by id — `GET /api/v1/traces/by_id`
 
@@ -106,6 +107,20 @@ Reads from the durable Ray store, returns a JSON array of spans.
 | `trace_id` | 32 hex characters, case-insensitive (W3C/OTel). Wrong length, empty or non-hex is a `400` |
 
 An unknown trace id is a calm `200 []`, never a `404`.
+
+## Trace with its logs — `GET /api/v1/traces/with_logs`
+
+| Parameter | Meaning |
+| --- | --- |
+| `trace_id` | 32 hex characters, case-insensitive (W3C/OTel). Wrong length, empty or non-hex is a `400` |
+
+Returns a single JSON object, `{trace_id, spans, logs}`: the trace's spans (the
+same shape as trace-by-id, status included) together with every log carrying that
+trace id (the same shape as the logs endpoint). It collapses "fetch the trace,
+then fetch its logs" into one request, with no client-side stitching. Keyed on
+the trace alone, so no time window is required or accepted. An unknown id is a
+calm `200` with empty `spans` and `logs`, never a `404`. The `trace_id` echoes
+back canonicalised to lowercase.
 
 ## Serving Prism from the same origin
 
