@@ -113,12 +113,12 @@ empty `spans` and `logs`.
 
 ## Follow a failure from trace to cause
 
-The bundled [`make demo`](/getting-started/run-the-stack/) data is shaped to
-walk this path. The seed emits several healthy traces alongside one failed
-checkout, so `error=true` on the demo service has something real to sift —
-listing the service returns them all, adding `error=true` leaves just the failed
-checkout. The failed span is marked with an error status, and its cause log rides
-inside the same trace, so one call then shows both *where* and *why*:
+The [always-current demo](/getting-started/run-the-stack/) is shaped to walk this
+path, and it is there as soon as the stack is up — no seeding needed. It carries
+a failed checkout trace for the `kaleidoscope-demo` service, with timestamps
+always relative to now so it is queryable at any time. The failed span is marked
+with an error status, and its cause log rides inside the same trace, so one call
+shows both *where* and *why*:
 
 ```sh
 curl 'http://localhost:9092/api/v1/traces/with_logs?trace_id=4bf92f3577b34da6a3ce929d0e0e4736'

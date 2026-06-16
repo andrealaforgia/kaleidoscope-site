@@ -61,29 +61,40 @@ flowchart LR
     R --- V[(shared data volume)]
 ```
 
-## Send some telemetry
+## The demo is already there
 
-The simplest path is the bundled sample generator:
+You do not have to seed anything to see Kaleidoscope working. After `make up`,
+the stack already answers with an always-current demo for tenant `acme`, service
+`kaleidoscope-demo` — a `request_count` metric, a `checkout failed: card
+declined` log, and a failed `POST /api/v1/checkout` trace whose cause log rides
+inside it. It is shaped to tell a small triage story: the checkout span is marked
+**failed** (an error status carrying that readable message, so a trace-by-id
+query shows *where* it failed), and the cause log shows *why*.
+
+This demo is synthesised at read time, not stored: its timestamps are always
+relative to now, so the first look is never empty and never stale, and because it
+has no write path it never accumulates and never touches your real data. It is
+scoped to the demo service only — every other query passes straight through to
+the real stores. To turn it off (a staged cutover, or a raw-only instance), set
+`KALEIDOSCOPE_DEMO_OVERLAY=0`.
+
+## Send your own telemetry
+
+To exercise the real ingest pipeline, push a genuine OTLP sample — it coexists
+with the synthetic demo rather than replacing it:
 
 ```sh
-make demo    # push a sample of each signal now
-make seed    # push it once (a no-op if already seeded)
+make demo    # push a real OTLP sample now (forced)
+make seed    # push a real OTLP sample once (marker-gated; no-op if already pushed)
 ```
 
-Both push a sample for tenant `acme` — a `request_count` metric, a
-`checkout failed: card declined` log, and several traces: one failed
-`POST /api/v1/checkout` plus a few healthy ones, all under fixed trace ids. The
-sample is shaped to tell a small triage story: the checkout span is marked
-**failed** (an error status carrying that readable message, so a trace-by-id
-query shows *where* it failed), and the cause log is emitted inside that same
-trace, so pulling the trace's logs returns *why* it failed. The healthy traces
-are there so an `error=true` listing has something to sift out — it is a worked
-example of pivoting from a failing trace to its cause. The generator runs a
-reachability check first, so if the stack is not up it names the unreachable
-endpoint, exits non-zero, and sends nothing rather than firing into the void.
+The generator runs a reachability check first, so if the stack is not up it names
+the unreachable endpoint, exits non-zero, and sends nothing rather than firing
+into the void.
 
-To send your own instead, point any OpenTelemetry SDK or the Collector's OTLP
-exporter at `localhost:4317` (gRPC) or `localhost:4318` (HTTP) and emit as usual.
+To send from your own application instead, point any OpenTelemetry SDK or the
+Collector's OTLP exporter at `localhost:4317` (gRPC) or `localhost:4318` (HTTP)
+and emit as usual.
 The local stack is single-tenant with authentication off, so no bearer token is
 needed; just make sure your telemetry uses the same tenant (`acme` by default)
 so it is visible. The repository's `examples/otel-external-demo` is a small

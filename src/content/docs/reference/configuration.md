@@ -60,6 +60,13 @@ is fixed by design.
 | Setting | Default | Notes |
 | --- | --- | --- |
 | `KALEIDOSCOPE_QUERY_STATIC_DIR` | unset | Points at a built Prism bundle to serve same-origin on `:9090` |
+| `KALEIDOSCOPE_DEMO_OVERLAY` | on | The always-current demo, synthesised at read time for the demo service only. Set to `0` or `false` to turn it off (a staged cutover, or a raw-only instance) |
+
+The demo overlay is on by default so the first look is never empty: it synthesises
+a now-relative demo (the failed-checkout trace, its cause log and a metric) for the
+demo service alone, with no write path, so it never accumulates and never touches
+real data. Every other query passes straight through. See [Run the whole
+stack](/getting-started/run-the-stack/).
 
 **Fixed in this runtime:** the listen ports — ingest gRPC `:4317`, ingest HTTP
 `:4318`, metrics `:9090`, logs `:9091`, traces `:9092`, all bound on `0.0.0.0` —
