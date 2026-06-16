@@ -69,10 +69,13 @@ service and a time window — it opens on a day-wide window, within the read-sid
 24-hour cap — and it lists the traces, badging the failed ones so you can spot a
 failure without opening it. An **Errors only** toggle (off on first paint, so you
 see the failure among the healthy traces) narrows the list to just the failed
-ones. Selecting a trace shows, on the same screen, its spans — including the
-error span's readable status message, the *where* — together with the logs
-correlated to that trace, the cause being the *why*. It is the trace-to-cause
-pivot from [Query your telemetry](/getting-started/querying/), made visual.
+ones. You can also search by a span attribute — a labelled key and value, say
+`customer.id` and `alice` — to pull one identifier's traces out of the crowd; the
+view fills both or neither, so it never sends a half-filter. Selecting a trace
+shows, on the same screen, its spans — including the error span's readable status
+message, the *where* — together with the logs correlated to that trace, the cause
+being the *why*. It is the trace-to-cause pivot from [Query your
+telemetry](/getting-started/querying/), made visual.
 
 It carries the same calm posture as the metrics panel: every outcome, including
 each failure, has its own surface, and the interactive elements went through the

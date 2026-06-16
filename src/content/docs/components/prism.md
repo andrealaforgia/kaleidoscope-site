@@ -57,9 +57,10 @@ the chart for assistive technology.
 Three views, switched from an accessible nav. The metrics panel: relative presets
 (5 min, 15 min, 1 h, 6 h, 24 h) and a custom absolute range, steady auto-refresh,
 a small fast bundle. A trace explorer that finds failed traces for a service and
-window — an *errors only* toggle, failed traces badged — and shows a selected
-trace's spans together with its correlated logs on one screen, the visual form of
-the trace-to-cause pivot. And a logs search that finds a symptom by body
+window — an *errors only* toggle, failed traces badged, or a span-attribute
+search such as `customer.id` to find one identifier among many — and shows a
+selected trace's spans together with its correlated logs on one screen, the
+visual form of the trace-to-cause pivot. And a logs search that finds a symptom by body
 substring or minimum severity and pivots from a log to its trace in one click.
 Prism is served by the read API from the same origin — point
 `KALEIDOSCOPE_QUERY_STATIC_DIR` at the built bundle and there is no separate web
