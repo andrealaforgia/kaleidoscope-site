@@ -42,11 +42,12 @@ serves:
 - Query APIs — metrics on `:9090`, logs on `:9091`, traces on `:9092`
 - Prism — served same-origin on `:9090` (no separate web server, no CORS)
 
-The trace query routes (`/api/v1/traces`, `/api/v1/traces/by_id`,
-`/api/v1/traces/with_logs`) are also served on the `:9090` origin alongside
-metrics and Prism, over the same data and with no CORS, so a same-origin frontend
-can read metrics and traces from one place. Logs stay on `:9091`. The standalone
-`:9092` traces endpoint is unchanged, so direct API clients can use either.
+The log and trace query routes (`/api/v1/logs`, `/api/v1/traces`,
+`/api/v1/traces/by_id`, `/api/v1/traces/with_logs`) are also served on the `:9090`
+origin alongside metrics and Prism, over the same data and with no CORS, so a
+same-origin frontend can read all three signals from one place — which is how
+Prism's own trace and logs views work. The dedicated `:9091` (logs) and `:9092`
+(traces) listeners are unchanged, so direct API clients can use either.
 
 Because ingest and query share the same process and the same stores, a metric you
 send is immediately queryable — there is no restart step between writing and
