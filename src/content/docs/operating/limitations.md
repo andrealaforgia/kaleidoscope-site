@@ -34,6 +34,12 @@ evaluation and development setup.
 - **Read caps are hard-coded.** The 24-hour window and 100,000-row result caps
   are constants, not yet configuration. See [read-side caps](/operating/read-caps/).
 - **Pagination cannot exceed the result cap.** You narrow the window instead.
+- **Span-attribute search is exact-string only.** Filtering traces by a span
+  attribute (`attr_key` / `attr_value`) matches the value as an exact string —
+  good for pulling one `customer.id` out of the crowd, but you cannot yet compare
+  a numeric attribute as a number (no `duration_ms >= 500`-style threshold). Span
+  attribute values are stored as strings today; typed numeric attributes are a
+  later iteration on the [roadmap](/reference/roadmap/).
 
 ## Ingest and SDK
 
