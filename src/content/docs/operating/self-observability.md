@@ -25,6 +25,24 @@ flowchart LR
 
 The same pattern fits every component, so extending it is mechanical.
 
+### Counting what it ingests
+
+The consolidated runtime already does this for log ingest. As it accepts log
+records it keeps a running total and writes it as an ordinary metric named
+`records_ingested` (a cumulative counter, tagged `signal=logs`). There is no
+admin endpoint and no special path: you read it through the normal metrics query,
+exactly like a metric from your own service.
+
+```
+GET /api/v1/query_range?query=records_ingested
+```
+
+Before any logs arrive the metric is simply absent; after you have ingested N log
+records it reads N. It lands under the same tenant the runtime ingests logs as
+(`acme` in the local stack), which is the tenant the metrics service answers for,
+so the query finds it with no extra configuration. Today this counts **log
+ingest only** — the same treatment for metric and trace ingest is a later slice.
+
 ## Exporting to a collector you already run
 
 For a real deployment you usually want Kaleidoscope's internal telemetry in the
