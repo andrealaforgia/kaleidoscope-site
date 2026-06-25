@@ -61,6 +61,22 @@ is fixed by design.
 | --- | --- | --- |
 | `KALEIDOSCOPE_QUERY_STATIC_DIR` | unset | Points at a built Prism bundle to serve same-origin on `:9090` |
 | `KALEIDOSCOPE_DEMO_OVERLAY` | on | The always-current demo, synthesised at read time for the demo service only. Set to `0` or `false` to turn it off (a staged cutover, or a raw-only instance) |
+| `KALEIDOSCOPE_RETENTION_MAX_AGE` | unset (keep forever) | How long metric samples are kept. A window like `60s`, `15m`, `1h` or `7d`; samples older than it are deleted before each read. Unset keeps everything |
+
+### Metrics retention
+
+By default Kaleidoscope keeps every metric sample forever. Set
+`KALEIDOSCOPE_RETENTION_MAX_AGE` to a single global window — a positive whole
+number followed by a unit, one of `s` (seconds), `m` (minutes), `h` (hours) or
+`d` (days), for example `KALEIDOSCOPE_RETENTION_MAX_AGE=7d`. Samples older than
+the window are **genuinely deleted**, not hidden: an expired point is gone even
+from an unfiltered read and does not come back after a restart. The window is
+applied on the read path, so a value you change takes effect on the next query.
+At startup the configured window is logged (`event=retention.configured`) so you
+can confirm it live; a malformed value (a missing unit like `60`, an unknown
+unit like `10y`, or a zero window like `0s`) refuses to start rather than being
+silently ignored. This window governs **metrics only** for now — logs and traces
+are kept indefinitely.
 
 The demo overlay is on by default so the first look is never empty: it synthesises
 a now-relative demo (the failed-checkout trace, its cause log and a metric) for the

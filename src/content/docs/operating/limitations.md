@@ -23,6 +23,11 @@ evaluation and development setup.
   (Spark, Aperture, Sieve, Codex, Prism, Augur, Aegis) are at v0; the durable
   v1 adapters exist for the six storage pillars and for alert state, not yet for
   the integration plane.
+- **Age-based retention covers metrics only.** A single global retention window
+  (`KALEIDOSCOPE_RETENTION_MAX_AGE`) genuinely deletes expired metric samples,
+  but logs and traces are still kept indefinitely, and the window is one value
+  for the whole stack — not yet per-tenant or per-signal. See
+  [configuration](/reference/configuration/#metrics-retention).
 
 ## Query
 
